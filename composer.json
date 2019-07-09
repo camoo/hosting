@@ -1,0 +1,38 @@
+{
+    "name": "camoo/hosting",
+    "description": "API Camoo.Hosting",
+    "type": "library",
+    "require": {
+        "php": ">=5.6",
+		"ext-curl": "*"
+    },
+    "minimum-stability": "dev",
+    "homepage": "https://www.camoo.hosting",
+    "license": "GPL-3.0+",
+    "prefer-stable" : true,
+    "authors": [
+    {
+        "name": "CAMOO SARL",
+        "email": "support@camoo.hosting"
+    }
+    ],
+    "keywords" : [
+        "API-Camoo.Hosting", 
+		"revendeur domaine .cm", 
+		"domaine .cm", 
+		"API domaine .cm", 
+		"API nom de domaine .cm", 
+		"API nom de domaine cameroun", 
+		"API pour revendeur nom de domaine cameroun"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Camoo\\Hosting\\": "src/"
+        }
+    },
+	"support": {
+		"issues": "https://github.com/camoo/hosting/issues",
+		"source": "https://github.com/camoo/hosting",
+		"wiki": "https://api-doc.camoo.hosting/"
+	}
+}

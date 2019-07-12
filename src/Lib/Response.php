@@ -13,6 +13,7 @@ class Response
     private static $_result = null;
 	const BAD_STATUS = 'KO';
 	const GOOD_STATUS = 'OK';
+
     public static function create($option)
     {
         static::$_status_code=$option['code'];
@@ -22,12 +23,12 @@ class Response
 
     public function getBody()
     {
-        return static::$_result;
+        return (string) static::$_result;
     }
 
     public function getStatusCode()
     {
-        return static::$_status_code;
+        return (int) static::$_status_code;
     }
 
     public function getJson()

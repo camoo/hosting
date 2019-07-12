@@ -28,4 +28,14 @@ class Domains extends AppModules
             return $hResponse;
         }
     }
+
+    public function renew($data)
+    {
+        $url = \Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/renew';
+        $oResponse = $this->getClient()->post($url, $data);
+        if ($oResponse->getStatusCode() === 200) {
+            $hResponse = $oResponse->getJson();
+            return $hResponse;
+        }
+    }
 }

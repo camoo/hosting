@@ -8,7 +8,7 @@ class Client
     private $_rest = null;
     private $_code = null;
     private $_token = null;
-	const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
+    const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
     protected $oResponse = [\Camoo\Hosting\Lib\Response::class, 'create'];
 
     public function __construct($accesstoken=null)

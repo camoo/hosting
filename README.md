@@ -1,7 +1,7 @@
 [![N|Solid](https://www.camoo.hosting/img/logos/logoDomain.png)](https://www.camoo.hosting)
 
 CAMOO SARL is an ANTIC Accredited Registrar in Cameroon.
-You can use ou API to check the availabiliity or to register cameroonian domain name extensions such as .CM, .CO.CM, .EDU.CM, .NET.CM or .COM.CM
+You can use our API to check the availabiliity or to register cameroonian domain name extensions such as .CM, .CO.CM, .EDU.CM, .NET.CM or .COM.CM
 
 This is only an example library, that can be used to send API request to camoo.hosting! You can check our [Documentation](https://api-doc.camoo.hosting) for more.
 

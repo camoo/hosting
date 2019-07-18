@@ -9,4 +9,9 @@ define('cm_email', 'you@gmail.com');
 define('cm_passwd', '2BSe3@pMRbCnV>J(G');
 
 $oDomain = new Domains;
-var_dump($oDomain->checkAvailability('example', 'cm'));
+$oResponse = $oDomain->checkAvailability('example', 'cm');
+// Get Entity
+var_dump($oResponse->getEntity());
+
+// OR get Array instead of entity
+var_dump($oResponse->getJson());

@@ -1,6 +1,7 @@
 <?php
 
 namespace Camoo\Hosting\Lib;
+
 use Client;
 
 /**
@@ -11,13 +12,18 @@ class Response
 {
     private static $_status_code = 201;
     private static $_result = null;
-	const BAD_STATUS = 'KO';
-	const GOOD_STATUS = 'OK';
+    private static $_entity = null;
+    const BAD_STATUS = 'KO';
+    const GOOD_STATUS = 'OK';
+
 
     public static function create($option)
     {
         static::$_status_code=$option['code'];
         static::$_result=$option['result'];
+        if (!empty($option['entity'])) {
+            static::$_entity=$option['entity'];
+        }
         return new self;
     }
 
@@ -33,7 +39,20 @@ class Response
 
     public function getJson()
     {
+        if ($this->getStatusCode() !== 200) {
+            return ['status' => static::BAD_STATUS, 'message' => 'request failed!'];
+        }
         return $this->decodeJson(static::$_result, true);
+    }
+
+    public function getEntity()
+    {
+        $class = '\\Camoo\\Hosting\\Entity\\' . static::$_entity;
+        if ($this->getStatusCode() !== 200) {
+            $hret = ['status' => static::BAD_STATUS, 'message' => 'request failed!'];
+            return (new $class)->convert($hret);
+        }
+        return (new $class)->get($this->decodeJson(static::$_result));
     }
 
     protected function decodeJson($sJSON, $bAsHash = false)

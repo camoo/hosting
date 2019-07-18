@@ -8,16 +8,20 @@ class Client
     private $_rest = null;
     private $_code = null;
     private $_token = null;
+    private $_entity = null;
     const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
     protected $oResponse = [\Camoo\Hosting\Lib\Response::class, 'create'];
 
-    public function __construct($accesstoken=null)
+    public function __construct($accesstoken=null, $entity=null)
     {
         if (!$this->_isCurl()) {
             trigger_error('PHP-Curl module is missing!', E_USER_ERROR);
         }
         if (null !== $accesstoken) {
             $this->_token = $accesstoken;
+        }
+        if (null !== $entity) {
+            $this->_entity = $entity;
         }
     }
 
@@ -40,7 +44,7 @@ class Client
         $this->_code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
         curl_close($crl);
         $this->_rest = $rest;
-        return ['result' => $this->_rest, 'code' => $this->_code];
+        return ['result' => $this->_rest, 'code' => $this->_code, 'entity' => $this->_entity];
     }
 
     public function setToken($accesstoken=null)

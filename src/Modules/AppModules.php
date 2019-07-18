@@ -12,6 +12,8 @@ class AppModules
 {
     protected $oAccessToken = [\Camoo\Hosting\Lib\AccessToken::class, 'get'];
 
+    protected $entityName = null;
+
     private $oToken = null;
 
     protected function getToken()
@@ -22,7 +24,18 @@ class AppModules
 
     protected function getClient()
     {
-        return new Client((string) $this->getToken());
+        if ($fullName = get_called_class()) {
+            $asFullName = explode('\\', $fullName);
+            $this->entityName = array_pop($asFullName);
+        }
+        return new Client((string) $this->getToken(), $this->entity());
+    }
+
+    protected function entity()
+    {
+        if (substr($this->entityName, -1) === 's') {
+            return substr($this->entityName, 0, -1);
+        }
     }
 
     protected function deleteToken()
@@ -30,5 +43,13 @@ class AppModules
         if (null !== $this->oToken) {
             $this->oToken->delete();
         }
+    }
+
+    public function __get($name)
+    {
+        if ($name === 'client') {
+            return $this->getClient();
+        }
+        throw new \Exception('BadProperty:: '. (string)$name, 404);
     }
 }

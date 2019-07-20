@@ -16,7 +16,6 @@ class Response
     const BAD_STATUS = 'KO';
     const GOOD_STATUS = 'OK';
 
-
     public static function create($option)
     {
         static::$_status_code=$option['code'];
@@ -52,7 +51,7 @@ class Response
             $hret = ['status' => static::BAD_STATUS, 'message' => 'request failed!'];
             return (new $class)->convert($hret);
         }
-        return (new $class)->get($this->decodeJson(static::$_result));
+        return (new $class)->convert($this->decodeJson(static::$_result));
     }
 
     protected function decodeJson($sJSON, $bAsHash = false)

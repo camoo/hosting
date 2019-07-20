@@ -2,24 +2,96 @@
 
 namespace Camoo\Hosting\Entity;
 
+use ReflectionObject;
+
 /**
  * Class AppEntity
  * @author CamooSarl
  */
 class AppEntity
 {
-    public function get($obj)
+    private static $asMapping = ['result','price','promo'];
+
+    public function __call($name, $arguments)
     {
-        $sourceReflection = new \ReflectionObject($obj);
+        $action = substr($name, 0, 3);
+        switch ($action) {
+                        case 'get':
+                            $property = strtolower(substr($name, 3));
+                            return $this->get($property);
+                            break;
+                        case 'set':
+                            $property = strtolower(substr($name, 3));
+                            return $this->set($property, $arguments[0]);
+                            break;
+                        default:
+                            return null;
+                    }
+    }
+
+    public function has(string $property)
+    {
+        return property_exists($this, $property);
+    }
+
+    public function get(string $property)
+    {
+        if (isset($property) && !empty($property) && $this->has($property)) {
+            return $this->{$property};
+        }
+        return null;
+    }
+
+    public function set($xData, $value=null)
+    {
+        if (is_array($xData)) {
+            foreach ($xData as $property => $value) {
+                if ($this->has($property)) {
+                    $this->set($property, $value);
+                }
+            }
+        } elseif (is_string($xData) && $this->has($xData)) {
+            $data = [$xData => $value];
+            $this->set($data);
+        }
+        return null;
+    }
+
+    public function convert($xData)
+    {
+        if (is_array($xData)) {
+            return $this->convertArray($xData);
+        }
+        if (is_object($xData)) {
+            return $this->convertObj($xData);
+        }
+    }
+
+    private function getMapping()
+    {
+        return self::$asMapping;
+    }
+
+    private function convertObj($obj)
+    {
+        $sourceReflection = new ReflectionObject($obj);
         $sourceProperties = $sourceReflection->getProperties();
         foreach ($sourceProperties as $sourceProperty) {
             $name = $sourceProperty->getName();
-            $this->{$name} = $obj->$name;
+            if (is_object($obj->$name)) {
+                $class = '\\Camoo\\Hosting\\Entity\\Content';
+                if (in_array($name, $this->getMapping())) {
+                    $class = '\\Camoo\\Hosting\\Entity\\' . ucfirst($name);
+                }
+                $this->{$name} = (new $class)->convert($obj->$name);
+            } else {
+                $this->{$name} = $obj->$name;
+            }
         }
         return $this;
     }
 
-    public function convert($array)
+    private function convertArray($array)
     {
         foreach ($array as $key => $value) {
             if (is_array($value)) {

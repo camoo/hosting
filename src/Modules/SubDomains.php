@@ -12,4 +12,9 @@ class SubDomains extends AppModules
     {
         return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'sub-domains/add', $data);
     }
+
+    public function delete($id)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'sub-domains/delete/'. $id);
+    }
 }

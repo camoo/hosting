@@ -33,4 +33,9 @@ class Domains extends AppModules
     {
         return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/unsuspend/'. $id);
     }
+
+    public function resendVerificationMail($id)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/resend-verification-mail/'. $id);
+    }
 }

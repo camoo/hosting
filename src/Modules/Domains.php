@@ -23,4 +23,14 @@ class Domains extends AppModules
     {
         return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/renew', $data);
     }
+
+    public function suspend($id)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/suspend/'. $id);
+    }
+
+    public function unsuspend($id)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/unsuspend/'. $id);
+    }
 }

@@ -38,4 +38,9 @@ class Domains extends AppModules
     {
         return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/resend-verification-mail/'. $id);
     }
+
+    public function isTranferable($domain)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/validate-tranfer/', ['domain-name' => $domain]);
+    }
 }

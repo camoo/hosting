@@ -43,4 +43,9 @@ class Domains extends AppModules
     {
         return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/validate-tranfer/', ['domain-name' => $domain]);
     }
+
+    public function transfer($data)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/transfer', $data);
+    }
 }

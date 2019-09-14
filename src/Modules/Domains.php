@@ -41,11 +41,16 @@ class Domains extends AppModules
 
     public function isTranferable($domain)
     {
-        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/validate-tranfer/', ['domain-name' => $domain]);
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/validate-tranfer', ['domain-name' => $domain]);
     }
 
     public function transfer($data)
     {
         return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/transfer', $data);
+    }
+
+    public function cmWhois($domain)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'domains/cm-whois', ['domain-name' => $domain]);
     }
 }

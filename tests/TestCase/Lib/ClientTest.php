@@ -46,6 +46,7 @@ class ClientTest extends TestCase
             ->setConstructorArgs([$accesstoken,$entity])
             ->getMock();
         $this->assertInstanceOf(Client::class, $this->oClientMocked);
+        return $this->oClientMocked;
     }
 
     /**

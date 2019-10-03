@@ -10,7 +10,7 @@ use Camoo\Hosting\Lib\Client;
  */
 class AppModules
 {
-    protected $oAccessToken = [\Camoo\Hosting\Lib\AccessToken::class, 'get'];
+    protected $oAccessToken = [\Camoo\Hosting\Lib\AccessToken::class, '_get'];
 
     protected $entityName = null;
 

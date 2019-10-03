@@ -56,15 +56,9 @@ class Response
 
     protected function decodeJson($sJSON, $bAsHash = false)
     {
-        try {
-            if (($xData = json_decode($sJSON, $bAsHash)) === null
+        if (($xData = json_decode($sJSON, $bAsHash)) === null
                 && (json_last_error() !== JSON_ERROR_NONE)) {
-                return null;
-                trigger_error(json_last_error_msg(), E_USER_ERROR);
-            }
-        } catch (Exception $e) {
-            trigger_error($e->getMessage(), E_USER_ERROR);
-            return null;
+            trigger_error(json_last_error_msg(), E_USER_ERROR);
         }
         return $xData;
     }

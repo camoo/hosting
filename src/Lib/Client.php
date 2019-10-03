@@ -25,7 +25,8 @@ class Client
         }
     }
 
-    private function apiCall($url, $data=[], $type='POST')
+    // @codeCoverageIgnoreStart
+    protected function apiCall($url, $data=[], $type='POST')
     {
         $crl = curl_init($url);
         $headr = [];
@@ -46,6 +47,7 @@ class Client
         $this->_rest = $rest;
         return ['result' => $this->_rest, 'code' => $this->_code, 'entity' => $this->_entity];
     }
+    // @codeCoverageIgnoreEnd
 
     public function setToken($accesstoken=null)
     {
@@ -54,10 +56,12 @@ class Client
         }
     }
 
+    // @codeCoverageIgnoreStart
     protected function getToken()
     {
         return $this->_token;
     }
+    // @codeCoverageIgnoreEnd
 
     public function post($url, $data=[])
     {
@@ -69,7 +73,7 @@ class Client
         return call_user_func($this->oResponse, $this->apiCall($url, $data, 'get'));
     }
 
-    private function _isCurl()
+    protected function _isCurl()
     {
         return function_exists('curl_version');
     }

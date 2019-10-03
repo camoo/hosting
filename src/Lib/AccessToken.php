@@ -9,14 +9,26 @@ namespace Camoo\Hosting\Lib;
 class AccessToken
 {
     const LOGIN_URL = 'https://api.camoo.hosting/v1/auth';
-    private static $_Token = null;
-    private static $_cacheFile = null;
+    protected static $_Token = null;
+    protected static $_cacheFile = null;
+    protected static $_login = [];
     
-    public static function get($hLogin=[])
+    public static function __callStatic($name, $arguments)
+    {
+        if ($name === '_get') {
+            $arg = empty($arguments[0])? [] : $arguments[0];
+            return (new self)->get($arg);
+        }
+        throw new \BadMethodCallException("Undefined method $method");
+    }
+
+    public function get($hLogin=[])
     {
         if (empty($hLogin) && defined('cm_email') && defined('cm_passwd')) {
             $hLogin = ['email' => cm_email, 'password' => cm_passwd];
         }
+        static::$_login = $hLogin;
+
         if (array_key_exists('email', $hLogin) && strpos($hLogin['email'], '@') !== false) {
             $asEmail = explode('@', $hLogin['email']);
             $sTmpName = $asEmail[0];
@@ -27,19 +39,34 @@ class AccessToken
                 } else {
                     if (($xData = file_get_contents(static::$_cacheFile)) && ($sData = self::decrypt($xData))) {
                         static::$_Token =$sData;
-                        return new self;
+                        return $this;
                     }
                 }
             }
         }
-        $oClient = new Client;
-        $oResponse = $oClient->post(static::LOGIN_URL, $hLogin);
-        if ($oResponse->getStatusCode() === 200 && ($hRep = $oResponse->getJson())  && $hRep['status'] === Response::GOOD_STATUS) {
+
+        if ($hRep = $this->apiCall()) {
             static::$_Token = $hRep['result']['access_token'];
             file_put_contents(static::$_cacheFile, self::encrypt(static::$_Token).PHP_EOL, LOCK_EX);
         }
-        return new self;
+        return $this;
     }
+
+    // @codeCoverageIgnoreStart
+    protected function getLoginData()
+    {
+        return static::$_login;
+    }
+
+    protected function apiCall()
+    {
+        $oResponse = (new Client)->post(static::LOGIN_URL, $this->getLoginData());
+        if ($oResponse->getStatusCode() === 200 && ($hRep = $oResponse->getJson())  && $hRep['status'] === Response::GOOD_STATUS) {
+            return $hRep;
+        }
+        return null;
+    }
+    // @codeCoverageIgnoreEnd
 
     public function delete()
     {

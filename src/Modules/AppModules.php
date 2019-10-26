@@ -8,6 +8,7 @@ use Camoo\Hosting\Lib\Client;
  * Class AppModules
  * @author CamooSarl
  */
+//@codeCoverageIgnoreStart
 class AppModules
 {
     protected $oAccessToken = [\Camoo\Hosting\Lib\AccessToken::class, '_get'];
@@ -53,3 +54,4 @@ class AppModules
         throw new \Exception('BadProperty:: '. (string)$name, 404);
     }
 }
+//@codeCoverageIgnoreEnd

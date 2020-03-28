@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace Camoo\Hosting\Entity;
 
 /**
- * Class Customer
+ * Class Configuration
  * @author CamooSarl
  */
-class Customer extends AppEntity
+final class Configuration extends AppEntity
 {
 }

@@ -23,7 +23,7 @@ class Customers extends AppModules
      */
     public function getByEmail($email)
     {
-        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/get-by-email/'. $mail);
+        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/get-by-email/?email='. $email);
     }
 
     /**
@@ -32,6 +32,15 @@ class Customers extends AppModules
      */
     public function getById($id)
     {
-        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/get-by-id/'.$id);
+        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/get-by-id/?id='.$id);
+    }
+
+    /**
+     * @param array $data
+     * @return Response
+     */
+    public function auth($data)
+    {
+        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/auth', $data);
     }
 }

@@ -43,4 +43,14 @@ class Customers extends AppModules
     {
         return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/auth', $data);
     }
+
+    /**
+     * @param int $id
+     * @return Response
+     */
+    public function getSsoToken($id)
+    {
+        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/sso/?id='.$id);
+    }
+
 }

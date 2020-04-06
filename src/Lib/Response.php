@@ -62,4 +62,9 @@ class Response
         }
         return $xData;
     }
+
+    public function getError()
+    {
+        return self::$_result;
+    }
 }

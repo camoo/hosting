@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace Camoo\Hosting\Lib;
 
-use Exception;
+use Response;
 
 class Client
 {
@@ -9,10 +11,12 @@ class Client
     private $_code = null;
     private $_token = null;
     private $_entity = null;
-    const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
+
+    public const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
+
     protected $oResponse = [\Camoo\Hosting\Lib\Response::class, 'create'];
 
-    public function __construct($accesstoken=null, $entity=null)
+    public function __construct(?string $accesstoken=null, ?string $entity=null)
     {
         if (!$this->_isCurl()) {
             trigger_error('PHP-Curl module is missing!', E_USER_ERROR);
@@ -26,7 +30,7 @@ class Client
     }
 
     // @codeCoverageIgnoreStart
-    protected function apiCall($url, $data=[], $type='POST')
+    protected function apiCall(string $url, array $data=[], string $type='POST') : array
     {
         $crl = curl_init($url);
         $headr = [];
@@ -49,7 +53,7 @@ class Client
     }
     // @codeCoverageIgnoreEnd
 
-    public function setToken($accesstoken=null)
+    public function setToken(?string $accesstoken=null)
     {
         if (null !== $accesstoken) {
             $this->_token = $accesstoken;
@@ -57,23 +61,23 @@ class Client
     }
 
     // @codeCoverageIgnoreStart
-    protected function getToken()
+    protected function getToken() : string
     {
         return $this->_token;
     }
     // @codeCoverageIgnoreEnd
 
-    public function post($url, $data=[])
+    public function post(string $url, array $data=[]) : Response
     {
         return call_user_func($this->oResponse, $this->apiCall($url, $data));
     }
 
-    public function get($url, $data=[])
+    public function get(string $url, array $data=[]) : Response
     {
         return call_user_func($this->oResponse, $this->apiCall($url, $data, 'get'));
     }
 
-    protected function _isCurl()
+    protected function _isCurl() : bool
     {
         return function_exists('curl_version');
     }

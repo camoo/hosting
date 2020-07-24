@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Camoo\Hosting\Lib;
 
@@ -13,30 +14,31 @@ class Response
     private static $_status_code = 201;
     private static $_result = null;
     private static $_entity = null;
+
     const BAD_STATUS = 'KO';
     const GOOD_STATUS = 'OK';
 
-    public static function create($option)
+    public static function create(array $option) : Response
     {
-        static::$_status_code=$option['code'];
-        static::$_result=$option['result'];
+        static::$_status_code = $option['code'];
+        static::$_result= $option['result'];
         if (!empty($option['entity'])) {
-            static::$_entity=$option['entity'];
+            static::$_entity = $option['entity'];
         }
         return new self;
     }
 
-    public function getBody()
+    public function getBody() : string
     {
         return (string) static::$_result;
     }
 
-    public function getStatusCode()
+    public function getStatusCode() : int
     {
         return (int) static::$_status_code;
     }
 
-    public function getJson()
+    public function getJson() : array
     {
         if ($this->getStatusCode() !== 200) {
             return ['status' => static::BAD_STATUS, 'message' => 'request failed!'];
@@ -54,7 +56,7 @@ class Response
         return (new $class)->convert($this->decodeJson(static::$_result));
     }
 
-    protected function decodeJson($sJSON, $bAsHash = false)
+    protected function decodeJson(string $sJSON, bool $bAsHash = false)
     {
         if (($xData = json_decode($sJSON, $bAsHash)) === null
                 && (json_last_error() !== JSON_ERROR_NONE)) {

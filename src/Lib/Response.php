@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace Camoo\Hosting\Lib;
 
-use Client;
-
 /**
  * Class Response
+ *
  * @author CamooSarl
  */
 class Response

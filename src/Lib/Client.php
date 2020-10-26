@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace Camoo\Hosting\Lib;
 
-use Response;
+use Camoo\Hosting\Lib\Response;
+use Camoo\Hosting\Exception\ClientException;
 
 class Client
 {
@@ -14,12 +15,12 @@ class Client
 
     public const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
 
-    protected $oResponse = [\Camoo\Hosting\Lib\Response::class, 'create'];
+    protected $oResponse = [Response::class, 'create'];
 
     public function __construct(?string $accesstoken=null, ?string $entity=null)
     {
         if (!$this->_isCurl()) {
-            trigger_error('PHP-Curl module is missing!', E_USER_ERROR);
+            throw new ClientException('PHP-Curl module is missing!', E_USER_ERROR);
         }
         if (null !== $accesstoken) {
             $this->_token = $accesstoken;
@@ -53,7 +54,7 @@ class Client
     }
     // @codeCoverageIgnoreEnd
 
-    public function setToken(?string $accesstoken=null)
+    public function setToken(?string $accesstoken=null) : void
     {
         if (null !== $accesstoken) {
             $this->_token = $accesstoken;
@@ -61,7 +62,7 @@ class Client
     }
 
     // @codeCoverageIgnoreStart
-    protected function getToken() : string
+    protected function getToken() : ?string
     {
         return $this->_token;
     }

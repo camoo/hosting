@@ -2,13 +2,15 @@
 
 namespace Camoo\Hosting\Lib;
 
+use BadMethodCallException;
+
 /**
  * Class AccessToken
  * @author CamooSarl
  */
 class AccessToken
 {
-    const LOGIN_URL = 'https://api.camoo.hosting/v1/auth';
+    private const LOGIN_URL = 'auth';
     protected static $_Token = null;
     protected static $_cacheFile = null;
     protected static $_login = [];
@@ -19,10 +21,10 @@ class AccessToken
             $arg = empty($arguments[0])? [] : $arguments[0];
             return (new self)->get($arg);
         }
-        throw new \BadMethodCallException("Undefined method $method");
+        throw new BadMethodCallException("Undefined method $method");
     }
 
-    public function get($hLogin=[])
+    public function get(array $hLogin=[]) : AccessToken
     {
         if (empty($hLogin) && defined('cm_email') && defined('cm_passwd')) {
             $hLogin = ['email' => cm_email, 'password' => cm_passwd];
@@ -53,14 +55,14 @@ class AccessToken
     }
 
     // @codeCoverageIgnoreStart
-    protected function getLoginData()
+    protected function getLoginData() : array
     {
         return static::$_login;
     }
 
     protected function apiCall()
     {
-        $oResponse = (new Client)->post(static::LOGIN_URL, $this->getLoginData());
+        $oResponse = (new Client)->post(self::LOGIN_URL, $this->getLoginData());
         if ($oResponse->getStatusCode() === 200 && ($hRep = $oResponse->getJson())  && $hRep['status'] === Response::GOOD_STATUS) {
             return $hRep;
         }
@@ -68,11 +70,12 @@ class AccessToken
     }
     // @codeCoverageIgnoreEnd
 
-    public function delete()
+    public function delete() : void
     {
-        if (null !== static::$_cacheFile) {
-            unlink(static::$_cacheFile);
+        if (null === static::$_cacheFile) {
+            return;
         }
+        unlink(static::$_cacheFile);
     }
 
     public function __toString()
@@ -80,7 +83,7 @@ class AccessToken
         return static::$_Token;
     }
 
-    private static function encrypt($string, $sCipher='AES-256-CBC')
+    private static function encrypt(string $string, string $sCipher='AES-256-CBC') : string
     {
         if (empty($string)) {
             return '';
@@ -96,7 +99,7 @@ class AccessToken
         return base64_encode($iv.$hmac.$ciphertext_raw);
     }
 
-    private static function decrypt($string, $sCipher='AES-256-CBC')
+    private static function decrypt(string $string, string $sCipher='AES-256-CBC') : string
     {
         if (empty($string)) {
             return '';

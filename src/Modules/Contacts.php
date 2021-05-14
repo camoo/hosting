@@ -11,6 +11,6 @@ class Contacts extends AppModules
 {
     public function add($data)
     {
-        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'contacts/add', $data);
+        return $this->client->post('contacts/add', $data);
     }
 }

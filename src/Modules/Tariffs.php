@@ -10,7 +10,7 @@ class Tariffs extends AppModules
 {
     public function get()
     {
-        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'tariffs/get');
+        return $this->client->get('tariffs/get');
     }
 
 }

@@ -11,6 +11,6 @@ final class Configurations extends AppModules
 {
     public function get()
     {
-        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'configuration/get');
+        return $this->client->get('configuration/get');
     }
 }

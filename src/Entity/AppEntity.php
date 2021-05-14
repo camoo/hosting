@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace Camoo\Hosting\Entity;
 
 use ReflectionObject;
+use stdClass;
 
 /**
  * Class AppEntity
@@ -29,7 +31,7 @@ class AppEntity
                     }
     }
 
-    public function has(string $property)
+    public function has(string $property) : bool
     {
         return property_exists($this, $property);
     }
@@ -67,12 +69,12 @@ class AppEntity
         }
     }
 
-    private function getMapping()
+    private function getMapping() : array
     {
         return self::$asMapping;
     }
 
-    private function convertObj($obj)
+    private function convertObj($obj) : AppEntity
     {
         $sourceReflection = new ReflectionObject($obj);
         $sourceProperties = $sourceReflection->getProperties();
@@ -85,20 +87,20 @@ class AppEntity
                 }
                 $this->{$name} = (new $class)->convert($obj->$name);
             } else {
-                $this->{$name} = $obj->$name;
+                $this->{$name} = $obj->{$name};
             }
         }
         return $this;
     }
 
-    private function convertArray($array)
+    private function convertArray(array $array) : AppEntity
     {
         foreach ($array as $key => $value) {
             if (is_array($value)) {
-                $this->$key = new \stdClass();
-                $this->convert($value, $this->$key);
+                $this->{$key} = new stdClass();
+                $this->convert($value, $this->{$key});
             } else {
-                $this->$key = $value;
+                $this->{$key} = $value;
             }
         }
         return $this;

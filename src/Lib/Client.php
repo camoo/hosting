@@ -13,7 +13,7 @@ class Client
     private $_token = null;
     private $_entity = null;
 
-    public const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
+    private const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
 
     protected $oResponse = [Response::class, 'create'];
 
@@ -30,9 +30,19 @@ class Client
         }
     }
 
+    private function buildUri(string $path) : string
+    {
+        return sprintf(
+            '%s/%s',
+            rtrim(self::API_ENDPOINT, '/'),
+            ltrim($path, '/')
+        );
+    }
+
     // @codeCoverageIgnoreStart
     protected function apiCall(string $url, array $data=[], string $type='POST') : array
     {
+        $url = $this->buildUri($url);
         $crl = curl_init($url);
         $headr = [];
         $headr[] = 'Content-type: application/json';

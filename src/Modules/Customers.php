@@ -14,7 +14,7 @@ class Customers extends AppModules
      */
     public function add($data)
     {
-        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/add', $data);
+        return $this->client->post('customers/add', $data);
     }
 
     /**
@@ -23,7 +23,7 @@ class Customers extends AppModules
      */
     public function getByEmail($email)
     {
-        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/get-by-email/?email='. $email);
+        return $this->client->get('customers/get-by-email/?email='. $email);
     }
 
     /**
@@ -32,7 +32,7 @@ class Customers extends AppModules
      */
     public function getById($id)
     {
-        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/get-by-id/?id='.$id);
+        return $this->client->get('customers/get-by-id/?id='.$id);
     }
 
     /**
@@ -41,7 +41,7 @@ class Customers extends AppModules
      */
     public function auth($data)
     {
-        return $this->client->post(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/auth', $data);
+        return $this->client->post('customers/auth', $data);
     }
 
     /**
@@ -50,7 +50,7 @@ class Customers extends AppModules
      */
     public function getSsoToken($id)
     {
-        return $this->client->get(\Camoo\Hosting\Lib\Client::API_ENDPOINT.'customers/sso/?id='.$id);
+        return $this->client->get('customers/sso/?id='.$id);
     }
 
 }

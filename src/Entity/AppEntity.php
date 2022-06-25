@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Camoo\Hosting\Entity;
@@ -8,11 +9,12 @@ use stdClass;
 
 /**
  * Class AppEntity
+ *
  * @author CamooSarl
  */
 class AppEntity
 {
-    private static $asMapping = ['result','price','promo'];
+    private static $asMapping = ['result', 'price', 'promo'];
 
     public function __call($name, $arguments)
     {
@@ -20,31 +22,32 @@ class AppEntity
         switch ($action) {
                         case 'get':
                             $property = strtolower(substr($name, 3));
+
                             return $this->get($property);
-                            break;
-                        case 'set':
+            case 'set':
                             $property = strtolower(substr($name, 3));
+
                             return $this->set($property, $arguments[0]);
-                            break;
-                        default:
+            default:
                             return null;
                     }
     }
 
-    public function has(string $property) : bool
+    public function has(string $property): bool
     {
         return property_exists($this, $property);
     }
 
     public function get(string $property)
     {
-        if (isset($property) && !empty($property) && $this->has($property)) {
+        if (!empty($property) && $this->has($property)) {
             return $this->{$property};
         }
+
         return null;
     }
 
-    public function set($xData, $value=null)
+    public function set($xData, $value = null)
     {
         if (is_array($xData)) {
             foreach ($xData as $property => $value) {
@@ -56,6 +59,7 @@ class AppEntity
             $data = [$xData => $value];
             $this->set($data);
         }
+
         return null;
     }
 
@@ -69,12 +73,12 @@ class AppEntity
         }
     }
 
-    private function getMapping() : array
+    private function getMapping(): array
     {
         return self::$asMapping;
     }
 
-    private function convertObj($obj) : AppEntity
+    private function convertObj($obj): AppEntity
     {
         $sourceReflection = new ReflectionObject($obj);
         $sourceProperties = $sourceReflection->getProperties();
@@ -85,15 +89,16 @@ class AppEntity
                 if (in_array($name, $this->getMapping())) {
                     $class = '\\Camoo\\Hosting\\Entity\\' . ucfirst($name);
                 }
-                $this->{$name} = (new $class)->convert($obj->$name);
+                $this->{$name} = (new $class())->convert($obj->$name);
             } else {
                 $this->{$name} = $obj->{$name};
             }
         }
+
         return $this;
     }
 
-    private function convertArray(array $array) : AppEntity
+    private function convertArray(array $array): AppEntity
     {
         foreach ($array as $key => $value) {
             if (is_array($value)) {
@@ -103,6 +108,7 @@ class AppEntity
                 $this->{$key} = $value;
             }
         }
+
         return $this;
     }
 }

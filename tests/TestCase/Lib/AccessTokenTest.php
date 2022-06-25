@@ -2,9 +2,9 @@
 
 namespace CamooHosting\Test\TestCase\Lib;
 
-use PHPUnit\Framework\TestCase;
 use Camoo\Hosting\Lib\AccessToken;
 use PHPUnit\Framework\Error\Error;
+use PHPUnit\Framework\TestCase;
 
 define('ACCESS_TOKEN_SALT', 'fjfhfjfhfjfh');
 define('cm_email', 'you@gmail.com');
@@ -12,6 +12,7 @@ define('cm_passwd', '2BSe3@pMRbCnV>J(G');
 
 /**
  * Class AccessTokenTest
+ *
  * @author CamooSarl
  * @covers \Camoo\Hosting\Lib\AccessToken
  */
@@ -19,7 +20,7 @@ class AccessTokenTest extends TestCase
 {
     private $oAccessTokenMocked;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->oAccessTokenMocked = $this->getMockBuilder(AccessToken::class)
             ->setMethods(['apiCall'])
@@ -27,7 +28,7 @@ class AccessTokenTest extends TestCase
 
         $this->oAccessTokenMocked->expects($this->any())
             ->method('apiCall')
-            ->will($this->returnValue(['result' => ['access_token' => time() .'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
+            ->will($this->returnValue(['result' => ['access_token' => time() . 'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
     }
 
     /**
@@ -39,7 +40,7 @@ class AccessTokenTest extends TestCase
         if (!empty($option)) {
             $asEmail = explode('@', $option['email']);
             $sTmpName = $asEmail[0];
-            $_cacheFile = dirname(dirname(dirname(__DIR__))). '/tmp/' .$sTmpName. '.cm';
+            $_cacheFile = dirname(dirname(dirname(__DIR__))) . '/tmp/' . $sTmpName . '.cm';
             if (file_exists($_cacheFile)) {
                 unlink($_cacheFile);
             }
@@ -50,7 +51,7 @@ class AccessTokenTest extends TestCase
 
         $oClientMock->expects($this->any())
             ->method('apiCall')
-            ->will($this->returnValue(['result' => ['access_token' => time() .'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
+            ->will($this->returnValue(['result' => ['access_token' => time() . 'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
 
         $get = $oClientMock->get($option);
         $this->assertInstanceOf(AccessToken::class, $get);
@@ -71,7 +72,7 @@ class AccessTokenTest extends TestCase
 
         $oClientMock->expects($this->any())
             ->method('apiCall')
-            ->will($this->returnValue(['result' => ['access_token' => time() .'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
+            ->will($this->returnValue(['result' => ['access_token' => time() . 'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
 
         $oClientMock::token($option);
     }
@@ -95,7 +96,7 @@ class AccessTokenTest extends TestCase
         if (!empty($option)) {
             $asEmail = explode('@', $option['email']);
             $sTmpName = $asEmail[0];
-            $_cacheFile = dirname(dirname(dirname(__DIR__))). '/tmp/' .$sTmpName. '.cm';
+            $_cacheFile = dirname(dirname(dirname(__DIR__))) . '/tmp/' . $sTmpName . '.cm';
             if (file_exists($_cacheFile)) {
                 touch($_cacheFile, time() - 1800);
             }

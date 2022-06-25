@@ -2,55 +2,52 @@
 
 namespace Camoo\Hosting\Modules;
 
+use Camoo\Hosting\Lib\Response;
+
 /**
  * Class Customers
+ *
  * @author CamooSarl
  */
 class Customers extends AppModules
 {
     /**
      * @param array $data
-     * @return Response
      */
-    public function add($data)
+    public function add($data): Response
     {
         return $this->client->post('customers/add', $data);
     }
 
     /**
      * @param string $email
-     * @return Response
      */
-    public function getByEmail($email)
+    public function getByEmail($email): Response
     {
-        return $this->client->get('customers/get-by-email/?email='. $email);
+        return $this->client->get('customers/get-by-email/?email=' . $email);
     }
 
     /**
      * @param int $id
-     * @return Response
      */
-    public function getById($id)
+    public function getById($id): Response
     {
-        return $this->client->get('customers/get-by-id/?id='.$id);
+        return $this->client->get('customers/get-by-id/?id=' . $id);
     }
 
     /**
      * @param array $data
-     * @return Response
      */
-    public function auth($data)
+    public function auth($data): Response
     {
         return $this->client->post('customers/auth', $data);
     }
 
     /**
      * @param int $id
-     * @return Response
      */
-    public function getSsoToken($id)
+    public function getSsoToken($id): Response
     {
-        return $this->client->get('customers/sso/?id='.$id);
+        return $this->client->get('customers/sso/?id=' . $id);
     }
-
 }

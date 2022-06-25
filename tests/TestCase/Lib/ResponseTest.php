@@ -2,18 +2,18 @@
 
 namespace CamooHosting\Test\TestCase\Lib;
 
-use PHPUnit\Framework\TestCase;
 use Camoo\Hosting\Lib\Response;
 use PHPUnit\Framework\Error\Error;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class ResponseTest
+ *
  * @author CamooSarl
  * @covers \Camoo\Hosting\Lib\Response
  */
 class ResponseTest extends TestCase
 {
-
     /**
      * @covers \Camoo\Hosting\Lib\Response::create
      * @dataProvider createDataProvider

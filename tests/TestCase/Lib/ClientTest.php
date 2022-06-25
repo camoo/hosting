@@ -2,12 +2,13 @@
 
 namespace CamooHosting\Test\TestCase\Lib;
 
-use PHPUnit\Framework\TestCase;
 use Camoo\Hosting\Lib\Client;
 use PHPUnit\Framework\Error\Error;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class ClientTest
+ *
  * @author CamooSarl
  * @covers \Camoo\Hosting\Lib\Client
  */
@@ -17,10 +18,8 @@ class ClientTest extends TestCase
 
     /**
      * setUp method
-     *
-     * @return void
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
         $this->oClientMocked = $this->createMock(Client::class);
@@ -28,10 +27,8 @@ class ClientTest extends TestCase
 
     /**
      * tearDown method
-     *
-     * @return void
      */
-    public function tearDown() : void
+    public function tearDown(): void
     {
         unset($this->oClientMocked);
         parent::tearDown();
@@ -39,25 +36,32 @@ class ClientTest extends TestCase
 
     /**
      * @dataProvider constructorSuccess
+     *
+     * @param mixed|null $accesstoken
+     * @param mixed|null $entity
      */
-    public function testInstance($accesstoken=null, $entity=null)
+    public function testInstance($accesstoken = null, $entity = null)
     {
         $this->oClientMocked = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([$accesstoken,$entity])
+            ->setConstructorArgs([$accesstoken, $entity])
             ->getMock();
         $this->assertInstanceOf(Client::class, $this->oClientMocked);
+
         return $this->oClientMocked;
     }
 
     /**
      * @dataProvider constructorSuccess
+     *
+     * @param mixed|null $accesstoken
+     * @param mixed|null $entity
      */
-    public function testInstanceFailure($accesstoken=null, $entity=null)
+    public function testInstanceFailure($accesstoken = null, $entity = null)
     {
         $this->expectException(Error::class);
         $this->oClientMocked = $this->getMockBuilder(Client::class)
             ->setMethods(['_isCurl'])
-            ->setConstructorArgs([$accesstoken,$entity])
+            ->setConstructorArgs([$accesstoken, $entity])
             ->getMock();
 
         $this->oClientMocked->expects($this->once())
@@ -72,7 +76,7 @@ class ClientTest extends TestCase
      */
     public function testSetToken($token)
     {
-        $client = new Client;
+        $client = new Client();
         $this->assertNull($client->setToken($token));
     }
 
@@ -80,7 +84,7 @@ class ClientTest extends TestCase
      * @covers \Camoo\Hosting\Lib\Client::post
      * @dataProvider postDataProvider
      */
-    public function testPost($url, $data=[])
+    public function testPost($url, $data = [])
     {
         $this->oClientMock = $this->getMockBuilder(Client::class)
             ->setMethods(['apiCall'])
@@ -97,7 +101,7 @@ class ClientTest extends TestCase
      * @covers \Camoo\Hosting\Lib\Client::get
      * @dataProvider postDataProvider
      */
-    public function testGet($url, $data=[])
+    public function testGet($url, $data = [])
     {
         $this->oClientMock = $this->getMockBuilder(Client::class)
             ->setMethods(['apiCall'])

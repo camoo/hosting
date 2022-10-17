@@ -65,7 +65,7 @@ class ClientTest extends TestCase
             ->getMock();
 
         $this->oClientMocked->expects($this->once())
-            ->method('_isCurl')
+            ->method('hasCurlSupport')
             ->will($this->returnValue(false));
         $this->assertInstanceOf(Client::class, $this->oClientMocked);
     }

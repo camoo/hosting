@@ -12,21 +12,21 @@ class Client
 
     protected array $oResponse = [Response::class, 'create'];
 
-    private ?string $_token = null;
+    private ?string $token = null;
 
-    private ?string $_entity = null;
+    private ?string $entity = null;
 
     public function __construct(?string $accessToken = null, ?string $entity = null)
     {
-        if (!$this->_isCurl()) {
+        if (!$this->hasCurlSupport()) {
             throw new ClientException('PHP-Curl module is missing!', E_USER_ERROR);
         }
 
         if (null !== $accessToken) {
-            $this->_token = $accessToken;
+            $this->token = $accessToken;
         }
         if (null !== $entity) {
-            $this->_entity = $entity;
+            $this->entity = $entity;
         }
     }
     // @codeCoverageIgnoreEnd
@@ -34,7 +34,7 @@ class Client
     public function setToken(?string $accessToken = null): void
     {
         if (null !== $accessToken) {
-            $this->_token = $accessToken;
+            $this->token = $accessToken;
         }
     }
     // @codeCoverageIgnoreEnd
@@ -68,20 +68,19 @@ class Client
         curl_setopt($crl, CURLOPT_SSLVERSION, 6);
         curl_setopt($crl, CURLOPT_TIMEOUT, 30);
         $rest = curl_exec($crl);
-        $_code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
+        $code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
         curl_close($crl);
-        $_rest = $rest;
 
-        return ['result' => $_rest, 'code' => $_code, 'entity' => $this->_entity];
+        return ['result' => $rest, 'code' => $code, 'entity' => $this->entity];
     }
 
     // @codeCoverageIgnoreStart
     protected function getToken(): ?string
     {
-        return $this->_token;
+        return $this->token;
     }
 
-    protected function _isCurl(): bool
+    protected function hasCurlSupport(): bool
     {
         return function_exists('curl_version');
     }

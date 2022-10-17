@@ -20,17 +20,17 @@ class AppEntity
     {
         $action = substr($name, 0, 3);
         switch ($action) {
-                        case 'get':
-                            $property = strtolower(substr($name, 3));
+            case 'get':
+                $property = strtolower(substr($name, 3));
 
-                            return $this->get($property);
+                return $this->get($property);
             case 'set':
-                            $property = strtolower(substr($name, 3));
+                $property = strtolower(substr($name, 3));
 
-                            return $this->set($property, $arguments[0]);
+                return $this->set($property, $arguments[0]);
             default:
-                            return null;
-                    }
+                return null;
+        }
     }
 
     public function has(string $property): bool

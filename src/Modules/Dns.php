@@ -13,7 +13,7 @@ class Dns extends AppModules
 {
     public function activate($id): Response
     {
-        return $this->client->post('dns/activate/' . $id);
+        return $this->client->post('dns/activate/', ['id' => $id]);
     }
 
     public function add($data): Response

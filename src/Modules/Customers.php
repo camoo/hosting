@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Camoo\Hosting\Modules;
 
 use Camoo\Hosting\Lib\Response;
@@ -11,42 +13,27 @@ use Camoo\Hosting\Lib\Response;
  */
 class Customers extends AppModules
 {
-    /**
-     * @param array $data
-     */
-    public function add($data): Response
+    public function add(array $data): Response
     {
         return $this->client->post('customers/add', $data);
     }
 
-    /**
-     * @param string $email
-     */
-    public function getByEmail($email): Response
+    public function getByEmail(string $email): Response
     {
         return $this->client->get('customers/get-by-email/?email=' . $email);
     }
 
-    /**
-     * @param int $id
-     */
-    public function getById($id): Response
+    public function getById(int $id): Response
     {
         return $this->client->get('customers/get-by-id/?id=' . $id);
     }
 
-    /**
-     * @param array $data
-     */
-    public function auth($data): Response
+    public function auth(array $data): Response
     {
         return $this->client->post('customers/auth', $data);
     }
 
-    /**
-     * @param int $id
-     */
-    public function getSsoToken($id): Response
+    public function getSsoToken(int $id): Response
     {
         return $this->client->get('customers/sso/?id=' . $id);
     }

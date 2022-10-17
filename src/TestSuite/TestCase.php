@@ -23,9 +23,7 @@ class TestCase extends BaseTestCase
 
     private $sClass = null;
 
-    /**
-     * setUp method
-     */
+    /** setUp method */
     public function setUp(): void
     {
         parent::setUp();
@@ -57,9 +55,7 @@ class TestCase extends BaseTestCase
             ->will($this->returnValue(call_user_func($this->oResponse, $hRes)));
     }
 
-    /**
-     * tearDown method
-     */
+    /** tearDown method */
     public function tearDown(): void
     {
         unset($this->oClientMocked);

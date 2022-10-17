@@ -26,7 +26,7 @@ class AccessToken
 
             return (new self())->get($arg);
         }
-        throw new BadMethodCallException("Undefined method $name");
+        throw new BadMethodCallException("Undefined method {$name}");
     }
 
     public function __toString(): string

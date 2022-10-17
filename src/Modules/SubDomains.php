@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Camoo\Hosting\Modules;
 
 use Camoo\Hosting\Lib\Response;
@@ -11,13 +13,13 @@ use Camoo\Hosting\Lib\Response;
  */
 class SubDomains extends AppModules
 {
-    public function add($data): Response
+    public function add(array $data): Response
     {
         return $this->client->post('sub-domains/add', $data);
     }
 
-    public function delete($id): Response
+    public function delete(int $id): Response
     {
-        return $this->client->post('sub-domains/delete/' . $id);
+        return $this->client->post('sub-domains/delete', ['id' => $id]);
     }
 }

@@ -14,6 +14,7 @@ define('cm_passwd', '2BSe3@pMRbCnV>J(G');
  * Class AccessTokenTest
  *
  * @author CamooSarl
+ *
  * @covers \Camoo\Hosting\Lib\AccessToken
  */
 class AccessTokenTest extends TestCase
@@ -33,6 +34,7 @@ class AccessTokenTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\AccessToken::get
+     *
      * @dataProvider getDataProvider
      */
     public function testGetNonCached($option)
@@ -61,6 +63,7 @@ class AccessTokenTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\AccessToken::get
+     *
      * @dataProvider getDataProvider
      */
     public function testGetException($option)
@@ -79,6 +82,7 @@ class AccessTokenTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\AccessToken::get
+     *
      * @dataProvider getDataProvider
      */
     public function testGetCached($option)
@@ -89,6 +93,7 @@ class AccessTokenTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\AccessToken::get
+     *
      * @dataProvider getDataProvider
      */
     public function testGetCachedExpired($option)
@@ -108,6 +113,7 @@ class AccessTokenTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\AccessToken::delete
+     *
      * @dataProvider getDataProvider
      */
     public function testDelete($option)

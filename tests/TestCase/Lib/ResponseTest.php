@@ -10,12 +10,14 @@ use PHPUnit\Framework\TestCase;
  * Class ResponseTest
  *
  * @author CamooSarl
+ *
  * @covers \Camoo\Hosting\Lib\Response
  */
 class ResponseTest extends TestCase
 {
     /**
      * @covers \Camoo\Hosting\Lib\Response::create
+     *
      * @dataProvider createDataProvider
      */
     public function testCreate($option)
@@ -26,6 +28,7 @@ class ResponseTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Response::getBody
+     *
      * @dataProvider createDataProvider
      */
     public function testGetBody($option)
@@ -36,6 +39,7 @@ class ResponseTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Response::getStatusCode
+     *
      * @dataProvider createDataProvider
      */
     public function testGetStatusCode($option)
@@ -46,6 +50,7 @@ class ResponseTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Response::getEntity
+     *
      * @dataProvider createDataProvider
      */
     public function testGetEntity($option)
@@ -56,6 +61,7 @@ class ResponseTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Response::getJson
+     *
      * @dataProvider createDataProvider
      */
     public function testGetJson($option)
@@ -66,6 +72,7 @@ class ResponseTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Response::getJson
+     *
      * @dataProvider createDataProviderFailure
      */
     public function testGetJsonFailure($option)

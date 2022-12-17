@@ -9,12 +9,14 @@ use Camoo\Hosting\TestSuite\TestCase;
  * Class DomainsTest
  *
  * @author CamooSarl
+ *
  * @covers \Camoo\Hosting\Modules\Domains
  */
 class DomainsTest extends TestCase
 {
     /**
      * @covers \Camoo\Hosting\Modules\Domains::checkAvailability
+     *
      * @testWith        ["test", "cm"]
      * 					["camoo", "cm"]
      */

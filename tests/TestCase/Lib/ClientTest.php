@@ -10,24 +10,21 @@ use PHPUnit\Framework\TestCase;
  * Class ClientTest
  *
  * @author CamooSarl
+ *
  * @covers \Camoo\Hosting\Lib\Client
  */
 class ClientTest extends TestCase
 {
     private $oClientMocked;
 
-    /**
-     * setUp method
-     */
+    /** setUp method */
     public function setUp(): void
     {
         parent::setUp();
         $this->oClientMocked = $this->createMock(Client::class);
     }
 
-    /**
-     * tearDown method
-     */
+    /** tearDown method */
     public function tearDown(): void
     {
         unset($this->oClientMocked);
@@ -72,6 +69,7 @@ class ClientTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Client::setToken
+     *
      * @dataProvider setTokenProvider
      */
     public function testSetToken($token)
@@ -82,6 +80,7 @@ class ClientTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Client::post
+     *
      * @dataProvider postDataProvider
      */
     public function testPost($url, $data = [])
@@ -99,6 +98,7 @@ class ClientTest extends TestCase
 
     /**
      * @covers \Camoo\Hosting\Lib\Client::get
+     *
      * @dataProvider postDataProvider
      */
     public function testGet($url, $data = [])

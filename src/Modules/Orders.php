@@ -10,6 +10,6 @@ final class Orders extends AppModules
 {
     public function offline(array $body): Response
     {
-        return $this->client->post('order/offline', ['body' => $body]);
+        return $this->client->post('order/offline', $body);
     }
 }

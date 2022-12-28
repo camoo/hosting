@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Camoo\Hosting\Lib;
 
 use BadMethodCallException;
+use Camoo\Cache\Cache;
+use Camoo\Cache\CacheConfig;
 
 /**
  * Class AccessToken
@@ -13,11 +17,22 @@ class AccessToken
 {
     private const LOGIN_URL = 'auth';
 
+    private const CACHE_KEY = 'http_access_token';
+
     protected static ?string $_Token = null;
 
-    protected static ?string $_cacheFile = null;
-
     protected static array $_login = [];
+
+    private Cache $cache;
+
+    private function __construct()
+    {
+        $salt = defined('ACCESS_TOKEN_SALT') ? ACCESS_TOKEN_SALT : null;
+        $this->cache = new Cache(CacheConfig::fromArray([
+            'crypto_salt' => $salt,
+            'tmpPath' => dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'tmp',
+        ]));
+    }
 
     public static function __callStatic($name, $arguments)
     {
@@ -34,33 +49,25 @@ class AccessToken
         return static::$_Token;
     }
 
-    public function get(array $hLogin = []): AccessToken
+    public function get(array $loginData = []): AccessToken
     {
-        if (empty($hLogin) && defined('cm_email') && defined('cm_passwd')) {
-            $hLogin = ['email' => cm_email, 'password' => cm_passwd];
+        if (empty($loginData) && defined('cm_email') && defined('cm_passwd')) {
+            $loginData = ['email' => cm_email, 'password' => cm_passwd];
         }
-        static::$_login = $hLogin;
+        self::$_login = $loginData;
 
-        if (array_key_exists('email', $hLogin) && strpos($hLogin['email'], '@') !== false) {
-            $asEmail = explode('@', $hLogin['email']);
-            $sTmpName = $asEmail[0];
-            static::$_cacheFile = dirname(__DIR__, 2) . '/tmp/' . $sTmpName . '.cm';
-            if (file_exists(static::$_cacheFile)) {
-                if (($iLastChangedTime = filemtime(static::$_cacheFile)) && (($iLastChangedTime + 1740) < time())) {
-                    unlink(static::$_cacheFile);
-                } else {
-                    if (($xData = file_get_contents(static::$_cacheFile)) && ($sData = self::decrypt($xData))) {
-                        static::$_Token = $sData;
+        if (array_key_exists('email', $loginData) && str_contains($loginData['email'], '@')) {
+            $token = $this->cache->read(self::CACHE_KEY);
+            if (!empty($token)) {
+                self::$_Token = $token;
 
-                        return $this;
-                    }
-                }
+                return $this;
             }
         }
 
         if ($hRep = $this->apiCall()) {
             static::$_Token = $hRep['result']['access_token'];
-            file_put_contents(static::$_cacheFile, self::encrypt(static::$_Token) . PHP_EOL, LOCK_EX);
+            $this->cache->write(self::CACHE_KEY, self::$_Token, 1790);
         }
 
         return $this;
@@ -69,10 +76,7 @@ class AccessToken
 
     public function delete(): void
     {
-        if (null === static::$_cacheFile) {
-            return;
-        }
-        unlink(static::$_cacheFile);
+        $this->cache->delete(self::CACHE_KEY);
     }
 
     // @codeCoverageIgnoreStart
@@ -84,45 +88,14 @@ class AccessToken
     protected function apiCall(): ?array
     {
         $oResponse = (new Client())->post(self::LOGIN_URL, $this->getLoginData());
-        if ($oResponse->getStatusCode() === 200 && ($hRep = $oResponse->getJson()) && $hRep['status'] === Response::GOOD_STATUS) {
-            return $hRep;
+        if ($oResponse->getStatusCode() !== 200) {
+            return null;
         }
 
-        return null;
-    }
+        $result = $oResponse->getJson();
 
-    private static function encrypt(string $string, string $sCipher = 'AES-256-CBC'): string
-    {
-        if (empty($string)) {
-            return '';
-        }
-        if (!defined('ACCESS_TOKEN_SALT')) {
-            return $string;
-        }
-        $key = hash('sha256', ACCESS_TOKEN_SALT);
-        $ivlen = openssl_cipher_iv_length($sCipher);
-        $iv = openssl_random_pseudo_bytes($ivlen);
-        $ciphertext_raw = openssl_encrypt($string, $sCipher, $key, OPENSSL_RAW_DATA, $iv);
-        $hmac = hash_hmac('sha256', $ciphertext_raw, $key, true);
+        $status = $result['status'] ?? null;
 
-        return base64_encode($iv . $hmac . $ciphertext_raw);
-    }
-
-    private static function decrypt(string $string, string $sCipher = 'AES-256-CBC'): string
-    {
-        if (empty($string)) {
-            return '';
-        }
-        if (!defined('ACCESS_TOKEN_SALT')) {
-            return $string;
-        }
-        $enc = base64_decode($string);
-        $key = hash('sha256', ACCESS_TOKEN_SALT);
-        $ivlen = openssl_cipher_iv_length($sCipher);
-        $iv = substr($enc, 0, $ivlen);
-        $hmac = substr($enc, $ivlen, $sha2len = 32);
-        $ciphertext_raw = substr($enc, $ivlen + $sha2len);
-
-        return openssl_decrypt($ciphertext_raw, $sCipher, $key, OPENSSL_RAW_DATA, $iv);
+        return  $status === Response::GOOD_STATUS ? $result : null;
     }
 }

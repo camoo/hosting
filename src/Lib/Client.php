@@ -4,85 +4,58 @@ declare(strict_types=1);
 
 namespace Camoo\Hosting\Lib;
 
-use Camoo\Hosting\Exception\ClientException;
+use Camoo\Http\Curl\Domain\Entity\Configuration;
+use Camoo\Http\Curl\Domain\Response\ResponseInterface;
+use Camoo\Http\Curl\Infrastructure\Request;
 
 class Client
 {
     private const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
 
-    protected array $oResponse = [Response::class, 'create'];
-
-    private ?string $token = null;
-
-    private ?string $entity = null;
-
-    public function __construct(?string $accessToken = null, ?string $entity = null)
+    public function __construct(private ?string $accessToken = null, private ?string $entity = null)
     {
-        if (!$this->hasCurlSupport()) {
-            throw new ClientException('PHP-Curl module is missing!', E_USER_ERROR);
-        }
-
-        if (null !== $accessToken) {
-            $this->token = $accessToken;
-        }
-        if (null !== $entity) {
-            $this->entity = $entity;
-        }
     }
     // @codeCoverageIgnoreEnd
 
     public function setToken(?string $accessToken = null): void
     {
-        if (null !== $accessToken) {
-            $this->token = $accessToken;
+        if (null === $accessToken) {
+            return;
         }
+        $this->accessToken = $accessToken;
     }
     // @codeCoverageIgnoreEnd
 
     public function post(string $url, array $data = []): Response
     {
-        return call_user_func($this->oResponse, $this->apiCall($url, $data));
+        return new Response($this->apiCall($url, $data), $this->entity);
     }
 
     public function get(string $url, array $data = []): Response
     {
-        return call_user_func($this->oResponse, $this->apiCall($url, $data, 'get'));
+        return new Response($this->apiCall($url, $data, 'GET'), $this->entity);
     }
 
     // @codeCoverageIgnoreStart
-    protected function apiCall(string $url, array $data = [], string $type = 'POST'): array
+    protected function apiCall(string $url, array $data = [], string $type = 'POST'): ResponseInterface
     {
         $url = $this->buildUri($url);
-        $crl = curl_init($url);
-        $header = [];
-        $header[] = 'Content-type: application/json';
+        $header = ['Content-type' => 'multipart/form-data'];
+
         if (null !== $this->getToken()) {
-            $header[] = 'Authorization: Bearer ' . $this->getToken();
+            $header['Authorization'] = 'Bearer ' . $this->getToken();
         }
-        curl_setopt($crl, CURLOPT_CUSTOMREQUEST, strtoupper($type));
 
-        curl_setopt($crl, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($crl, CURLOPT_HTTPHEADER, $header);
+        $client = new \Camoo\Http\Curl\Infrastructure\Client();
+        $request = new Request(Configuration::create(), $url, $header, $data, $type);
 
-        curl_setopt($crl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($crl, CURLOPT_SSLVERSION, 6);
-        curl_setopt($crl, CURLOPT_TIMEOUT, 30);
-        $rest = curl_exec($crl);
-        $code = curl_getinfo($crl, CURLINFO_HTTP_CODE);
-        curl_close($crl);
-
-        return ['result' => $rest, 'code' => $code, 'entity' => $this->entity];
+        return $client->sendRequest($request);
     }
 
     // @codeCoverageIgnoreStart
     protected function getToken(): ?string
     {
-        return $this->token;
-    }
-
-    protected function hasCurlSupport(): bool
-    {
-        return function_exists('curl_version');
+        return $this->accessToken;
     }
 
     private function buildUri(string $path): string

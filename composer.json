@@ -3,10 +3,12 @@
   "description": "API Camoo.Hosting",
   "type": "library",
   "require": {
-    "php": ">=7.4",
+    "php": ">=8.0",
     "ext-curl": "*",
     "ext-openssl": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "camoo/curl-http-client": "^1.0",
+    "camoo/cache": "^2.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^8.0"

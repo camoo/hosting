@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Camoo\Hosting\Lib;
 
+use Psr\Http\Message\ResponseInterface;
+
 /**
  * Class Response
  *
@@ -15,31 +17,23 @@ class Response
 
     public const GOOD_STATUS = 'OK';
 
-    private static int $_status_code = 201;
-
-    private static ?string $_result = null;
-
-    private static ?string $_entity = null;
-
-    public static function create(array $option): Response
+    public function __construct(private ResponseInterface $response, private ?string $entity = null)
     {
-        static::$_status_code = (int)$option['code'];
-        static::$_result = $option['result'];
-        if (!empty($option['entity'])) {
-            static::$_entity = $option['entity'];
-        }
+    }
 
-        return new self();
+    public static function create(array $option): self
+    {
+        return new self($option['response'], $option['entity'] ?? null);
     }
 
     public function getBody(): string
     {
-        return (string)static::$_result;
+        return (string)$this->response->getBody();
     }
 
     public function getStatusCode(): int
     {
-        return static::$_status_code;
+        return $this->response->getStatusCode();
     }
 
     public function getJson(): array
@@ -48,27 +42,30 @@ class Response
             return ['status' => static::BAD_STATUS, 'message' => 'request failed!'];
         }
 
-        return $this->decodeJson(static::$_result, true);
+        return $this->decodeJson($this->getBody(), true);
     }
 
-    public function getEntity()
+    public function getEntity(): mixed
     {
-        $class = '\\Camoo\\Hosting\\Entity\\' . static::$_entity;
+        if (null === $this->entity) {
+            return null;
+        }
+        $class = '\\Camoo\\Hosting\\Entity\\' . $this->entity;
         if ($this->getStatusCode() !== 200) {
             $entityData = ['status' => static::BAD_STATUS, 'message' => 'request failed!'];
 
             return (new $class())->convert($entityData);
         }
 
-        return (new $class())->convert($this->decodeJson(static::$_result));
+        return (new $class())->convert($this->decodeJson($this->getBody()));
     }
 
     public function getError(): ?string
     {
-        return self::$_result;
+        return $this->getBody();
     }
 
-    protected function decodeJson(string $sJSON, bool $bAsHash = false)
+    protected function decodeJson(string $sJSON, bool $bAsHash = false): mixed
     {
         if (($xData = json_decode($sJSON, $bAsHash)) === null
                 && (json_last_error() !== JSON_ERROR_NONE)) {

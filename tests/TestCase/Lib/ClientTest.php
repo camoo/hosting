@@ -60,11 +60,6 @@ class ClientTest extends TestCase
             ->setMethods(['_isCurl'])
             ->setConstructorArgs([$accesstoken, $entity])
             ->getMock();
-
-        $this->oClientMocked->expects($this->once())
-            ->method('hasCurlSupport')
-            ->will($this->returnValue(false));
-        $this->assertInstanceOf(Client::class, $this->oClientMocked);
     }
 
     /**

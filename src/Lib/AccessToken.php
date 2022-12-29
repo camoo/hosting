@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Camoo\Hosting\Lib;
 
 use BadMethodCallException;
-use Camoo\Cache\Cache;
-use Camoo\Cache\CacheConfig;
 
 /**
  * Class AccessToken
@@ -17,22 +15,13 @@ class AccessToken
 {
     private const LOGIN_URL = 'auth';
 
-    private const CACHE_KEY = 'http_access_token';
+    private const ENCRYPT_KEY = 'AES-256-CBC';
 
-    protected static ?string $_Token = null;
+    protected static ?string $accessToken = null;
 
-    protected static array $_login = [];
+    protected static ?string $tmpPath = null;
 
-    private Cache $cache;
-
-    private function __construct()
-    {
-        $salt = defined('ACCESS_TOKEN_SALT') ? ACCESS_TOKEN_SALT : null;
-        $this->cache = new Cache(CacheConfig::fromArray([
-            'crypto_salt' => $salt,
-            'tmpPath' => dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'tmp',
-        ]));
-    }
+    protected static array $loginData = [];
 
     public static function __callStatic($name, $arguments)
     {
@@ -46,7 +35,7 @@ class AccessToken
 
     public function __toString(): string
     {
-        return static::$_Token;
+        return static::$accessToken;
     }
 
     public function get(array $loginData = []): AccessToken
@@ -54,20 +43,17 @@ class AccessToken
         if (empty($loginData) && defined('cm_email') && defined('cm_passwd')) {
             $loginData = ['email' => cm_email, 'password' => cm_passwd];
         }
-        self::$_login = $loginData;
+        static::$loginData = $loginData;
 
-        if (array_key_exists('email', $loginData) && str_contains($loginData['email'], '@')) {
-            $token = $this->cache->read(self::CACHE_KEY);
-            if (!empty($token)) {
-                self::$_Token = $token;
+        $cached = $this->localCache($loginData);
 
-                return $this;
-            }
+        if (null !== $cached) {
+            return $this;
         }
 
         if ($hRep = $this->apiCall()) {
-            static::$_Token = $hRep['result']['access_token'];
-            $this->cache->write(self::CACHE_KEY, self::$_Token, 1790);
+            static::$accessToken = $hRep['result']['access_token'];
+            file_put_contents(self::$tmpPath, self::encrypt(static::$accessToken) . PHP_EOL, LOCK_EX);
         }
 
         return $this;
@@ -76,26 +62,88 @@ class AccessToken
 
     public function delete(): void
     {
-        $this->cache->delete(self::CACHE_KEY);
+        if (null === static::$tmpPath) {
+            return;
+        }
+        unlink(static::$tmpPath);
     }
 
     // @codeCoverageIgnoreStart
     protected function getLoginData(): array
     {
-        return static::$_login;
+        return static::$loginData;
     }
 
     protected function apiCall(): ?array
     {
         $oResponse = (new Client())->post(self::LOGIN_URL, $this->getLoginData());
+
         if ($oResponse->getStatusCode() !== 200) {
             return null;
         }
 
         $result = $oResponse->getJson();
 
-        $status = $result['status'] ?? null;
+        return $result['status'] === Response::GOOD_STATUS ? $result : null;
+    }
 
-        return  $status === Response::GOOD_STATUS ? $result : null;
+    private function localCache(array $loginData): ?string
+    {
+        if (!array_key_exists('email', $loginData) || !str_contains($loginData['email'], '@')) {
+            return null;
+        }
+        [$sTmpName] = explode('@', $loginData['email']);
+
+        static::$tmpPath = dirname(__DIR__, 2) . '/tmp/' . $sTmpName . '.cm';
+
+        if (!is_file(self::$tmpPath)) {
+            return null;
+        }
+
+        self::$accessToken = null;
+        if (($iLastChangedTime = filemtime(self::$tmpPath)) && (($iLastChangedTime + 1740) < time())) {
+            unlink(static::$tmpPath);
+        } else {
+            if (($xData = file_get_contents(self::$tmpPath)) && ($sData = self::decrypt($xData))) {
+                self::$accessToken = $sData;
+            }
+        }
+
+        return self::$accessToken;
+    }
+
+    private static function encrypt(string $string): string
+    {
+        if (empty($string)) {
+            return '';
+        }
+        if (!defined('ACCESS_TOKEN_SALT')) {
+            return $string;
+        }
+        $key = hash('sha256', ACCESS_TOKEN_SALT);
+        $iv_length = openssl_cipher_iv_length(self::ENCRYPT_KEY);
+        $iv = openssl_random_pseudo_bytes($iv_length);
+        $ciphertext_raw = openssl_encrypt($string, self::ENCRYPT_KEY, $key, OPENSSL_RAW_DATA, $iv);
+        $hmac = hash_hmac('sha256', $ciphertext_raw, $key, true);
+
+        return base64_encode($iv . $hmac . $ciphertext_raw);
+    }
+
+    private static function decrypt(string $string): string
+    {
+        if (empty($string)) {
+            return '';
+        }
+        if (!defined('ACCESS_TOKEN_SALT')) {
+            return $string;
+        }
+        $enc = base64_decode($string);
+        $key = hash('sha256', ACCESS_TOKEN_SALT);
+        $iv_length = openssl_cipher_iv_length(self::ENCRYPT_KEY);
+        $iv = substr($enc, 0, $iv_length);
+        substr($enc, $iv_length, $sha2len = 32);
+        $ciphertext_raw = substr($enc, $iv_length + $sha2len);
+
+        return openssl_decrypt($ciphertext_raw, self::ENCRYPT_KEY, $key, OPENSSL_RAW_DATA, $iv);
     }
 }

@@ -45,7 +45,7 @@ class Domains extends AppModules
         return $this->client->post('domains/resend-verification-mail', ['id' => $id]);
     }
 
-    public function isTranferable(string $domain): Response
+    public function isTransferable(string $domain): Response
     {
         return $this->client->post('domains/validate-transfer', ['domain-name' => $domain]);
     }
@@ -58,5 +58,16 @@ class Domains extends AppModules
     public function cmWhois(string $domain): Response
     {
         return $this->client->post('domains/cm-whois', ['domain-name' => $domain]);
+    }
+
+    public function getDetails(int $id): Response
+    {
+        return $this->client->get('domains/details', ['id' => $id]);
+    }
+
+    /** @param string[] $nameservers */
+    public function modifyNs(int $id, array $nameservers): Response
+    {
+        return $this->client->post('domains/modify-nameservers', ['id' => $id, 'ns' => implode(',', $nameservers)]);
     }
 }

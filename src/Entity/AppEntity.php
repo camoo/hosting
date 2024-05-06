@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Camoo\Hosting\Entity;
 
+use Camoo\Hosting\Factory\EntityFactory;
 use ReflectionObject;
 use stdClass;
 
@@ -12,11 +13,17 @@ use stdClass;
  *
  * @author CamooSarl
  */
-class AppEntity
+class AppEntity implements EntityInterface
 {
-    private static $asMapping = ['result', 'price', 'promo'];
+    /** @var array|string[] */
+    private static array $asMapping = ['result', 'price', 'promo'];
 
-    public function __call($name, $arguments)
+    /**
+     * @param array<int,mixed> $arguments
+     *
+     * @return void|null
+     */
+    public function __call(string $name, array $arguments)
     {
         $action = substr($name, 0, 3);
         switch ($action) {
@@ -27,7 +34,8 @@ class AppEntity
             case 'set':
                 $property = strtolower(substr($name, 3));
 
-                return $this->set($property, $arguments[0]);
+                $this->set($property, $arguments[0]);
+                break;
             default:
                 return null;
         }
@@ -38,77 +46,91 @@ class AppEntity
         return property_exists($this, $property);
     }
 
-    public function get(string $property)
+    public function get(string $property): mixed
     {
-        if (!empty($property) && $this->has($property)) {
-            return $this->{$property};
-        }
-
-        return null;
+        return $this->has($property) ? $this->{$property} : null;
     }
 
-    public function set($xData, $value = null)
+    /** @inheritDoc */
+    public function set(array|string $data, mixed $value = null): void
     {
-        if (is_array($xData)) {
-            foreach ($xData as $property => $value) {
+        if (is_array($data)) {
+            foreach ($data as $property => $val) {
                 if ($this->has($property)) {
-                    $this->set($property, $value);
+                    $this->{$property} = $val;
                 }
             }
-        } elseif (is_string($xData) && $this->has($xData)) {
-            $data = [$xData => $value];
-            $this->set($data);
+        } elseif ($this->has($data)) {
+            $this->{$data} = $value;
+        }
+    }
+
+    public function convert(mixed $data): ?self
+    {
+        if (is_array($data)) {
+            return $this->convertArray($data);
+        }
+        if (is_object($data)) {
+            return $this->convertObj($data);
         }
 
         return null;
     }
 
-    public function convert($xData)
-    {
-        if (is_array($xData)) {
-            return $this->convertArray($xData);
-        }
-        if (is_object($xData)) {
-            return $this->convertObj($xData);
-        }
-    }
-
+    /** @return array|string[] */
     private function getMapping(): array
     {
         return self::$asMapping;
     }
 
-    private function convertObj($obj): AppEntity
+    private function convertObj(object $obj): self
     {
         $sourceReflection = new ReflectionObject($obj);
         $sourceProperties = $sourceReflection->getProperties();
         foreach ($sourceProperties as $sourceProperty) {
             $name = $sourceProperty->getName();
+            $normalizedName = $this->normalizeKey($name);
             if (is_object($obj->$name)) {
-                $class = '\\Camoo\\Hosting\\Entity\\Content';
+                $class = clone $this->determineClass('');
                 if (in_array($name, $this->getMapping())) {
-                    $class = '\\Camoo\\Hosting\\Entity\\' . ucfirst($name);
+                    $class = clone $this->determineClass(ucfirst($name));
                 }
-                $this->{$name} = (new $class())->convert($obj->$name);
+
+                $this->{$normalizedName} = $class->convert($obj->$name);
             } else {
-                $this->{$name} = $obj->{$name};
+
+                $this->{$normalizedName} = $obj->{$name};
             }
         }
 
         return $this;
     }
 
-    private function convertArray(array $array): AppEntity
+    private function determineClass(string $propertyName): EntityInterface
+    {
+        return EntityFactory::create()->getEntityClass($propertyName);
+    }
+
+    /**
+     * @param array<string, mixed> $array
+     */
+    private function convertArray(array $array): self
     {
         foreach ($array as $key => $value) {
+            $normalizedName = $this->normalizeKey($key);
             if (is_array($value)) {
-                $this->{$key} = new stdClass();
-                $this->convert($value, $this->{$key});
+                $this->{$normalizedName} = new stdClass();
+                $this->convert($value);
             } else {
-                $this->{$key} = $value;
+                $this->{$normalizedName} = $value;
             }
         }
 
         return $this;
+    }
+
+    private function normalizeKey(string $key): string
+    {
+        return str_replace('-', '_', $key);
     }
 }

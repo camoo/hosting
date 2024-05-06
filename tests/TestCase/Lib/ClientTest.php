@@ -63,14 +63,14 @@ class ClientTest extends TestCase
     }
 
     /**
-     * @covers \Camoo\Hosting\Lib\Client::setToken
+     * @covers \Camoo\Hosting\Lib\Client::setAccessToken
      *
      * @dataProvider setTokenProvider
      */
     public function testSetToken($token)
     {
         $client = new Client();
-        $this->assertNull($client->setToken($token));
+        $this->assertNull($client->setAccessToken($token));
     }
 
     /**

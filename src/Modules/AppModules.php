@@ -11,33 +11,29 @@ use Camoo\Hosting\Lib\Client;
 /**
  * Class AppModules
  *
- * @property Client $client
+ * @property-read  Client $client
  *
  * @author CamooSarl
  */
 //@codeCoverageIgnoreStart
 class AppModules
 {
-    protected array $oAccessToken = [AccessToken::class, '_get'];
-
     protected ?string $entityName = null;
 
-    private ?AccessToken $oToken = null;
-
-    public function __get(string $name)
+    /**
+     * Magic method for property access. Supports 'client' and 'accessToken' properties for lazy loading.
+     *
+     * @param string $name Property name.
+     *
+     * @throws ModuleException Thrown when attempting to access a property that does not exist or is not allowed.
+     */
+    public function __get(string $name): Client
     {
-        if ($name !== 'client') {
-            throw new ModuleException('BadProperty:: ' . $name, 404);
-        }
 
-        return $this->getClient();
-    }
-
-    protected function getToken(): AccessToken
-    {
-        $this->oToken = call_user_func($this->oAccessToken);
-
-        return $this->oToken;
+        return match ($name) {
+            'client' => $this->getClient(),
+            default => throw new ModuleException('Invalid property access: ' . $name, 404),
+        };
     }
 
     protected function getClient(): Client
@@ -50,28 +46,20 @@ class AppModules
         $asFullName = explode('\\', $fullName);
         $this->entityName = array_pop($asFullName);
 
-        return new Client((string)$this->getToken(), $this->entity());
+        return new Client(AccessToken::getInstance()->get(), $this->getEntityName());
     }
 
-    protected function entity(): ?string
+    protected function getEntityName(): ?string
     {
         if (null === $this->entityName) {
             return null;
         }
 
-        if (substr($this->entityName, -1) !== 's') {
+        if (!str_ends_with($this->entityName, 's')) {
             return null;
         }
 
         return substr($this->entityName, 0, -1);
-    }
-
-    protected function deleteToken(): void
-    {
-        if (null === $this->oToken) {
-            return;
-        }
-        $this->oToken->delete();
     }
 }
 //@codeCoverageIgnoreEnd

@@ -122,7 +122,7 @@ class AccessTokenTest extends TestCase
         $this->assertNull($get->delete());
     }
 
-    public function getDataProvider()
+    public function getDataProvider(): array
     {
         return [
             [['email' => 'test@gmail.com', 'password' => 'TopSecret!']],

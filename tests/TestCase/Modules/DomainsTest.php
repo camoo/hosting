@@ -56,7 +56,7 @@ class DomainsTest extends TestCase
         $this->assertInstanceOf(Response::class, $this->oClientMocked->resendVerificationMail(11));
     }
 
-    /** @covers \Camoo\Hosting\Modules\Domains::isTranferable */
+    /** @covers \Camoo\Hosting\Modules\Domains::isTransferable */
     public function testisTranferable()
     {
         $this->assertInstanceOf(Response::class, $this->oClientMocked->isTranferable('test.cm'));

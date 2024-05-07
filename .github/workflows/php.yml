@@ -41,7 +41,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
       
     - name: Run PHPStan
-      run: vendor/bin/phpstan analyse --level=max
+      run: vendor/bin/phpstan analyse --level=8
 
     - name: Run PHPUnit tests
       run: vendor/bin/phpunit

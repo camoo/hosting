@@ -15,7 +15,7 @@
   },
   "minimum-stability": "dev",
   "homepage": "https://www.camoo.hosting",
-  "license": "GPL-3.0+",
+  "license": "GPL-3.0-or-later",
   "prefer-stable": true,
   "authors": [
     {

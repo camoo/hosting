@@ -13,6 +13,9 @@ use Camoo\Hosting\Lib\Response;
  */
 class SubDomains extends AppModules
 {
+    /**
+     * @param array<string,string|int> $data
+     */
     public function add(array $data): Response
     {
         return $this->client->post('sub-domains/add', $data);

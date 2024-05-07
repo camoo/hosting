@@ -3,6 +3,8 @@
 namespace Camoo\Hosting\TestSuite;
 
 use Camoo\Hosting\Lib\Client;
+use Camoo\Hosting\Lib\Response;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
@@ -14,49 +16,62 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 class TestCase extends BaseTestCase
 {
     protected $oPost;
-
     protected $oGet;
+    protected array $oResponse;
+    protected MockObject $oClientMocked;
 
-    protected $oResponse = [\Camoo\Hosting\Lib\Response::class, 'create'];
-
-    protected $oClientMocked;
-
-    private $sClass = null;
-
-    /** setUp method */
-    public function setUp(): void
+    /**
+     * Sets up the environment before each test.
+     */
+    protected function setUp(): void
     {
         parent::setUp();
-        $asClass = explode('\\', get_called_class());
-        $sClass = array_pop($asClass);
-        $sClass = substr($sClass, 0, -4);
-        $this->sClass = "\\Camoo\\Hosting\\Modules\\{$sClass}";
-        $this->oClientMocked = $this->getMockBuilder($this->sClass)
-            ->setMethods(['__get'])
-             //->disableOriginalConstructor()
+
+        // Determine the class under test from the name of the test class
+        $asClass = explode('\\', static::class);
+        $sClass = substr(array_pop($asClass), 0, -4);  // Assuming test class names end in 'Test'
+        $sClass1 = "\\Camoo\\Hosting\\Modules\\{$sClass}";
+
+        // Mock the client being tested
+        $this->oClientMocked = $this->getMockBuilder($sClass1)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['__get'])
             ->getMock();
 
-        $this->oPost = $this->oGet = $this->getMockBuilder(Client::class)
-            ->setMethods(['post', 'get'])
-            ->setConstructorArgs(['some token', 'Domain'])
-            ->getMock();
+        // Prepare common responses for POST and GET
+        $this->oPost = $this->createMock(Client::class);
+        $this->oGet = $this->createMock(Client::class);
 
-        $this->oClientMocked->expects($this->once())
-            ->method('__get')
-            ->will($this->returnValue($this->oPost));
+        // Setup response factory mock
+        $this->oResponse = [$this, 'createResponse'];
 
-        $hRes = ['result' => '{"Test" : "ok"}', 'code' => 200, 'entity' => 'Domain'];
-        $this->oPost->expects($this->any())
-            ->method('post')
-            ->will($this->returnValue(call_user_func($this->oResponse, $hRes)));
+        // Configure the mocked client to return the mocked POST/GET a client on __get
+        $this->oClientMocked->method('__get')
+            ->willReturnCallback(function ($name) {
+                return $name === 'post' ? $this->oPost : $this->oGet;
+            });
 
-        $this->oGet->expects($this->any())
-            ->method('get')
-            ->will($this->returnValue(call_user_func($this->oResponse, $hRes)));
+        // Mock the behavior of the POST and GET requests
+        $hRes = ['result' => '{"Test": "ok"}', 'code' => 200, 'entity' => 'Domain'];
+        $this->oPost->method('post')->willReturn(call_user_func($this->oResponse, $hRes));
+        $this->oGet->method('get')->willReturn(call_user_func($this->oResponse, $hRes));
     }
 
-    /** tearDown method */
-    public function tearDown(): void
+    /**
+     * Response simulation method for creating a response based on input.
+     */
+    protected function createResponse(array $options)
+    {
+        $responseMock = $this->createMock(Response::class);
+        $responseMock->method('getJson')->willReturn(json_decode($options['result'], true));
+        $responseMock->method('getStatusCode')->willReturn($options['code']);
+        return $responseMock;
+    }
+
+    /**
+     * Cleans up the environment after each test.
+     */
+    protected function tearDown(): void
     {
         unset($this->oClientMocked);
         parent::tearDown();

@@ -1,101 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CamooHosting\Test\TestCase\Lib;
 
+use Camoo\Hosting\Entity\EntityInterface;
+use Camoo\Hosting\Factory\EntityFactoryInterface;
 use Camoo\Hosting\Lib\Response;
-use PHPUnit\Framework\Error\Error;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
-/**
- * Class ResponseTest
- *
- * @author CamooSarl
- *
- * @covers \Camoo\Hosting\Lib\Response
- */
 class ResponseTest extends TestCase
 {
-    /**
-     * @covers \Camoo\Hosting\Lib\Response::create
-     *
-     * @dataProvider createDataProvider
-     */
-    public function testCreate($option)
+    private MockObject $httpResponseMock;
+
+    private MockObject $streamMock;
+
+    private Response $response;
+
+    protected function setUp(): void
     {
-        $response = Response::create($option);
-        $this->assertInstanceOf(Response::class, $response);
+        $this->httpResponseMock = $this->createMock(HttpResponseInterface::class);
+        $this->streamMock = $this->createMock(StreamInterface::class);
+
+        $this->httpResponseMock->method('getBody')->willReturn($this->streamMock);
+        $this->factoryMock = $this->createMock(EntityFactoryInterface::class);
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\Response::getBody
-     *
-     * @dataProvider createDataProvider
-     */
-    public function testGetBody($option)
+    public function testGetStatusCode()
     {
-        $response = Response::create($option);
-        $this->assertEquals($response->getBody(), $option['result']);
+        $this->httpResponseMock->method('getStatusCode')->willReturn(200);
+        $response = new Response($this->httpResponseMock);
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\Response::getStatusCode
-     *
-     * @dataProvider createDataProvider
-     */
-    public function testGetStatusCode($option)
+    public function testGetBody()
     {
-        $response = Response::create($option);
-        $this->assertEquals($response->getStatusCode(), $option['code']);
+        $this->streamMock->method('getContents')->willReturn('{"status":"OK","data":"some data"}');
+        $response = new Response($this->httpResponseMock);
+        $this->assertEquals('{"status":"OK","data":"some data"}', $response->getBody());
+        $this->assertEquals('{"status":"OK","data":"some data"}', $response->getError());
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\Response::getEntity
-     *
-     * @dataProvider createDataProvider
-     */
-    public function testGetEntity($option)
+    public function testGetJsonWithBadStatus()
     {
-        $response = Response::create($option);
-        $this->assertIsObject($response->getEntity());
+        $this->httpResponseMock->method('getStatusCode')->willReturn(404);
+        $response = new Response($this->httpResponseMock);
+        $this->assertEquals(['status' => 'KO', 'message' => 'Request failed!'], $response->getJson());
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\Response::getJson
-     *
-     * @dataProvider createDataProvider
-     */
-    public function testGetJson($option)
+    public function testGetJsonWithGoodStatus()
     {
-        $response = Response::create($option);
-        $this->assertIsArray($response->getJson());
+        $this->httpResponseMock->method('getStatusCode')->willReturn(200);
+        $this->streamMock->method('getContents')->willReturn('{"status":"OK","result":{"some-key":"value"}}');
+        $response = new Response($this->httpResponseMock);
+        $this->assertEquals(['status' => 'OK', 'result' => ['some_key' => 'value']], $response->getJson());
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\Response::getJson
-     *
-     * @dataProvider createDataProviderFailure
-     */
-    public function testGetJsonFailure($option)
+    public function testGetEntity()
     {
-        $this->expectException(Error::class);
-        $response = Response::create($option);
-        $this->assertNull($response->getJson());
-    }
-
-    public function createDataProvider()
-    {
-        return [
-            [['code' => 200, 'result' => '{"Test":"OK"}', 'entity' => 'Domain']],
-            [['code' => 500, 'result' => '{"Test":"NOK"}']],
-            [['code' => 404, 'result' => '{"Test":"NOK"}', null]],
-        ];
-    }
-
-    public function createDataProviderFailure()
-    {
-        return [
-            [['code' => 200, 'result' => '{"NOK"}']],
-            [['code' => 200, 'result' => null, null]],
-        ];
+        $this->httpResponseMock->method('getStatusCode')->willReturn(200);
+        $this->streamMock->method('getContents')->willReturn('{"some-key":"value"}');
+        $response = new Response($this->httpResponseMock, 'SomeEntity');
+        $result = $response->getEntity();
+        $this->assertInstanceOf(EntityInterface::class, $result);
     }
 }

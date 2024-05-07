@@ -23,9 +23,7 @@ class Response
     {
     }
 
-    /**
-     * @param array<string,mixed> $option
-     */
+    /** @param array<string,mixed> $option */
     public static function create(array $option): self
     {
         return new self($option['response'], $option['entity'] ?? null);
@@ -33,7 +31,7 @@ class Response
 
     public function getBody(): string
     {
-        return (string)$this->response->getBody();
+        return $this->response->getBody()->getContents();
     }
 
     public function getStatusCode(): int
@@ -66,6 +64,7 @@ class Response
         if (null === $this->entity) {
             return null;
         }
+
         $class = EntityFactory::create()->getEntityClass($this->entity);
         if ($this->getStatusCode() !== 200) {
             $entityData = ['status' => static::BAD_STATUS, 'message' => 'request failed!'];

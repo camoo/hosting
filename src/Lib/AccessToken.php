@@ -28,6 +28,11 @@ class AccessToken implements Stringable
 
     private static ?self $instance = null;
 
+    public function __construct(private ?Client $client = null)
+    {
+        $this->client ??= new Client();
+    }
+
     public function __toString(): string
     {
         if (null === self::$tokenDTO) {
@@ -46,9 +51,7 @@ class AccessToken implements Stringable
         return self::$instance;
     }
 
-    /**
-     * @param array<string,string> $loginData
-     */
+    /** @param array<string,string> $loginData */
     public function get(array $loginData = []): self
     {
         if (empty($loginData) && defined('cm_email') && defined('cm_passwd')) {
@@ -106,7 +109,9 @@ class AccessToken implements Stringable
     /** @return array<string,mixed>|null */
     protected function apiCall(): ?array
     {
-        $oResponse = (new Client())->post(self::LOGIN_URL, $this->getLoginData());
+        /** @var Client $client */
+        $client = $this->client;
+        $oResponse = $client->post(self::LOGIN_URL, $this->getLoginData());
 
         if ($oResponse->getStatusCode() !== 200) {
             return null;

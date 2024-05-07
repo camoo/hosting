@@ -13,6 +13,9 @@ use Camoo\Hosting\Lib\Response;
  */
 class Customers extends AppModules
 {
+    /**
+     * @param array<string,string|int> $data
+     */
     public function add(array $data): Response
     {
         return $this->client->post('customers/add', $data);
@@ -28,6 +31,7 @@ class Customers extends AppModules
         return $this->client->get('customers/get-by-id/?id=' . $id);
     }
 
+    /** @param array<string,string|int> $data */
     public function auth(array $data): Response
     {
         return $this->client->post('customers/auth', $data);

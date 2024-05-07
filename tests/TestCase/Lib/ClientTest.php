@@ -2,9 +2,15 @@
 
 namespace CamooHosting\Test\TestCase\Lib;
 
+use Camoo\Hosting\Dto\AccessTokenDTO;
+use Camoo\Hosting\Lib\AccessToken;
 use Camoo\Hosting\Lib\Client;
-use PHPUnit\Framework\Error\Error;
+use Camoo\Hosting\Lib\Response;
+use Camoo\Http\Curl\Domain\Client\ClientInterface as HttpClient;
+use Camoo\Http\Curl\Domain\Response\ResponseInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Class ClientTest
@@ -15,125 +21,67 @@ use PHPUnit\Framework\TestCase;
  */
 class ClientTest extends TestCase
 {
-    private $oClientMocked;
+    private Client $client;
 
-    /** setUp method */
-    public function setUp(): void
+    private MockObject $httpMock;
+
+    protected function setUp(): void
     {
-        parent::setUp();
-        $this->oClientMocked = $this->createMock(Client::class);
+        $accessTokenMock = $this->createMock(AccessToken::class);
+        $this->httpMock = $this->createMock(HttpClient::class);
+
+        // Mock AccessTokenDTO
+        $this->accessTokenDTO = new AccessTokenDTO('valid_token', 'Bearer', 3600, time(), 'scope');
+
+        // Setting up the AccessToken mock to return AccessTokenDTO
+        $accessTokenMock->method('get')->willReturn($accessTokenMock);
+        $accessTokenMock->method('getTokenDTO')->willReturn($this->accessTokenDTO);
+
+        $this->client = new Client($accessTokenMock, null, $this->httpMock);
     }
 
-    /** tearDown method */
-    public function tearDown(): void
+    public function testPost()
     {
-        unset($this->oClientMocked);
-        parent::tearDown();
+        $expectedResponse = $this->createMock(ResponseInterface::class);
+
+        $expectedResponse->method('getStatusCode')->willReturn(200);
+        $body = $this->createMock(StreamInterface::class);
+        $body->method('getContents')->willReturn('{"status": "OK", "message": "Success"}');
+        $expectedResponse->method('getBody')->willReturn($body);
+
+        $this->httpMock->method('sendRequest')->willReturn($expectedResponse);
+
+        $url = 'endpoint';
+        $data = ['key' => 'value'];
+
+        // Execute the method under test
+        $response = $this->client->post($url, $data);
+
+        // Assertions to check if the response is handled correctly
+        $this->assertInstanceOf(Response::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"status": "OK", "message": "Success"}', $response->getBody());
+
+        $this->assertEquals('valid_token', $this->accessTokenDTO->accessToken);
+
     }
 
-    /**
-     * @dataProvider constructorSuccess
-     *
-     * @param mixed|null $accesstoken
-     * @param mixed|null $entity
-     */
-    public function testInstance($accesstoken = null, $entity = null)
+    public function testGet()
     {
-        $this->oClientMocked = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([$accesstoken, $entity])
-            ->getMock();
-        $this->assertInstanceOf(Client::class, $this->oClientMocked);
+        $expectedResponse = $this->createMock(ResponseInterface::class);
+        $expectedResponse->method('getStatusCode')->willReturn(200);
+        $body = $this->createMock(StreamInterface::class);
+        $body->method('getContents')->willReturn('{"status": "OK", "details": "Retrieved successfully"}');
+        $expectedResponse->method('getBody')->willReturn($body);
 
-        return $this->oClientMocked;
-    }
+        $this->httpMock->method('sendRequest')->willReturn($expectedResponse);
 
-    /**
-     * @dataProvider constructorSuccess
-     *
-     * @param mixed|null $accesstoken
-     * @param mixed|null $entity
-     */
-    public function testInstanceFailure($accesstoken = null, $entity = null)
-    {
-        $this->expectException(Error::class);
-        $this->oClientMocked = $this->getMockBuilder(Client::class)
-            ->setMethods(['_isCurl'])
-            ->setConstructorArgs([$accesstoken, $entity])
-            ->getMock();
-    }
+        $url = 'retrieve-data';
+        $data = ['query' => 'info'];
 
-    /**
-     * @covers \Camoo\Hosting\Lib\Client::setAccessToken
-     *
-     * @dataProvider setTokenProvider
-     */
-    public function testSetToken($token)
-    {
-        $client = new Client();
-        $this->assertNull($client->setAccessToken($token));
-    }
-
-    /**
-     * @covers \Camoo\Hosting\Lib\Client::post
-     *
-     * @dataProvider postDataProvider
-     */
-    public function testPost($url, $data = [])
-    {
-        $this->oClientMock = $this->getMockBuilder(Client::class)
-            ->setMethods(['apiCall'])
-            ->setConstructorArgs(['kdhkjdhkjdhkdh'])
-            ->getMock();
-
-        $this->oClientMock->expects($this->once())
-            ->method('apiCall')
-            ->will($this->returnValue(['result' => '{"test":"OK"}', 'code' => 200, 'entity' => null]));
-        $this->assertNotNull($this->oClientMock->post($url, $data));
-    }
-
-    /**
-     * @covers \Camoo\Hosting\Lib\Client::get
-     *
-     * @dataProvider postDataProvider
-     */
-    public function testGet($url, $data = [])
-    {
-        $this->oClientMock = $this->getMockBuilder(Client::class)
-            ->setMethods(['apiCall'])
-            ->setConstructorArgs(['kdhkjdhkjdhkdh'])
-            ->getMock();
-
-        $this->oClientMock->expects($this->once())
-            ->method('apiCall')
-            ->will($this->returnValue(['result' => '{"test":"OK"}', 'code' => 200, 'entity' => null]));
-        $this->assertNotNull($this->oClientMock->get($url, $data));
-    }
-
-    public function constructorSuccess()
-    {
-        return [
-            [],
-            ['ffhjgkfghjfgkfghkfuzhfk', null],
-            ['ffhjgkfghjfgkfghkfuzhfkdd', 'Domain'],
-        ];
-    }
-
-    public function setTokenProvider()
-    {
-        return [
-            [null],
-            ['hfkjgheiuzie76e7i6eieutieuteiut'],
-            ['hfkjghegigiiuzie76e7i6eieutieuteiut'],
-            ['hfkjghghgheiuzie76e7i6eieutieuteiut'],
-        ];
-    }
-
-    public function postDataProvider()
-    {
-        return [
-            ['https://api.google.com', []],
-            ['https://api.camoo.com', ['domain' => 'camoo.cm']],
-            ['https://api.yahoo.com', ['domain' => 'camoo', 'tld' => 'cm']],
-        ];
+        $response = $this->client->get($url, $data);
+        $this->assertInstanceOf(Response::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"status": "OK", "details": "Retrieved successfully"}', $response->getBody());
     }
 }

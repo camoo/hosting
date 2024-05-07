@@ -20,11 +20,13 @@ class Domains extends AppModules
         return $this->client->post('domains/availability', $data);
     }
 
+    /** @param array<string,string|int> $data */
     public function register(array $data): Response
     {
         return $this->client->post('domains/register', $data);
     }
 
+    /** @param array<string,string|int> $data */
     public function renew(array $data): Response
     {
         return $this->client->post('domains/renew', $data);
@@ -50,6 +52,7 @@ class Domains extends AppModules
         return $this->client->post('domains/validate-transfer', ['domain-name' => $domain]);
     }
 
+    /** @param array<string,string|int> $data */
     public function transfer(array $data): Response
     {
         return $this->client->post('domains/transfer', $data);

@@ -13,6 +13,7 @@ use Camoo\Hosting\Lib\Response;
  */
 class Contacts extends AppModules
 {
+    /** @param array<string,string|int> $data */
     public function add(array $data): Response
     {
         return $this->client->post('contacts/add', $data);

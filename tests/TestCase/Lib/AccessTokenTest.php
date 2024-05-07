@@ -2,131 +2,66 @@
 
 namespace CamooHosting\Test\TestCase\Lib;
 
+use Camoo\Hosting\Dto\AccessTokenDTO;
 use Camoo\Hosting\Lib\AccessToken;
-use PHPUnit\Framework\Error\Error;
+use Camoo\Hosting\Lib\Client;
+use Camoo\Hosting\Lib\Response;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
-define('ACCESS_TOKEN_SALT', 'fjfhfjfhfjfh');
-define('cm_email', 'you@gmail.com');
-define('cm_passwd', '2BSe3@pMRbCnV>J(G');
-
-/**
- * Class AccessTokenTest
- *
- * @author CamooSarl
- *
- * @covers \Camoo\Hosting\Lib\AccessToken
- */
 class AccessTokenTest extends TestCase
 {
-    private $oAccessTokenMocked;
+    private AccessToken $accessToken;
 
-    public function setUp(): void
+    private Client $client;
+
+    protected function setUp(): void
     {
-        $this->oAccessTokenMocked = $this->getMockBuilder(AccessToken::class)
-            ->setMethods(['apiCall'])
-            ->getMock();
-
-        $this->oAccessTokenMocked->expects($this->any())
-            ->method('apiCall')
-            ->will($this->returnValue(['result' => ['access_token' => time() . 'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
+        $this->client = $this->createMock(Client::class);
+        $this->accessToken = new AccessToken($this->client);
+        $this->accessToken->delete(); // Ensure a clean state before each test
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\AccessToken::get
-     *
-     * @dataProvider getDataProvider
-     */
-    public function testGetNonCached($option)
+    public function testGetInstance()
     {
-        if (!empty($option)) {
-            $asEmail = explode('@', $option['email']);
-            $sTmpName = $asEmail[0];
-            $_cacheFile = dirname(dirname(dirname(__DIR__))) . '/tmp/' . $sTmpName . '.cm';
-            if (file_exists($_cacheFile)) {
-                unlink($_cacheFile);
-            }
-        }
-        $oClientMock = $this->getMockBuilder(AccessToken::class)
-            ->setMethods(['apiCall'])
-            ->getMock();
-
-        $oClientMock->expects($this->any())
-            ->method('apiCall')
-            ->will($this->returnValue(['result' => ['access_token' => time() . 'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
-
-        $get = $oClientMock->get($option);
-        $this->assertInstanceOf(AccessToken::class, $get);
-        $this->assertInstanceOf(AccessToken::class, $oClientMock::_get($option));
-        $this->assertNotEmpty((string)$get);
+        $this->assertInstanceOf(AccessToken::class, $this->accessToken);
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\AccessToken::get
-     *
-     * @dataProvider getDataProvider
-     */
-    public function testGetException($option)
+    public function testDeleteToken()
     {
-        $this->expectException(Error::class);
-        $oClientMock = $this->getMockBuilder(AccessToken::class)
-            ->setMethods(['apiCall'])
-            ->getMock();
-
-        $oClientMock->expects($this->any())
-            ->method('apiCall')
-            ->will($this->returnValue(['result' => ['access_token' => time() . 'khddkjdhdjdhoid847d_f'], 'code' => 200, 'entity' => null]));
-
-        $oClientMock::token($option);
+        $this->accessToken->delete();
+        $this->assertNull($this->accessToken->getTokenDTO());
     }
 
-    /**
-     * @covers \Camoo\Hosting\Lib\AccessToken::get
-     *
-     * @dataProvider getDataProvider
-     */
-    public function testGetCached($option)
+    public function testGetWithFreshToken()
     {
-        $get = $this->oAccessTokenMocked->get($option);
-        $this->assertIsObject($get);
-    }
+        // Prepare the mock response object
+        $response = $this->createMock(ResponseInterface::class);
+        $body = $this->createMock(StreamInterface::class);
+        $body->method('getContents')->willReturn(json_encode([
+            'status' => 'OK',
+            'result' => [
+                'access_token' => 'abc123',
+                'token_type' => 'Bearer',
+                'expires_in' => 3600,
+                'scope' => 'test_scope',
+            ],
+        ]));
 
-    /**
-     * @covers \Camoo\Hosting\Lib\AccessToken::get
-     *
-     * @dataProvider getDataProvider
-     */
-    public function testGetCachedExpired($option)
-    {
-        if (!empty($option)) {
-            $asEmail = explode('@', $option['email']);
-            $sTmpName = $asEmail[0];
-            $_cacheFile = dirname(dirname(dirname(__DIR__))) . '/tmp/' . $sTmpName . '.cm';
-            if (file_exists($_cacheFile)) {
-                touch($_cacheFile, time() - 1800);
-            }
-        }
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn($body);
 
-        $get = $this->oAccessTokenMocked->get($option);
-        $this->assertIsObject($get);
-    }
+        // Setting up the client mock to return the response
+        $this->client->method('post')->willReturn(new Response($response));
 
-    /**
-     * @covers \Camoo\Hosting\Lib\AccessToken::delete
-     *
-     * @dataProvider getDataProvider
-     */
-    public function testDelete($option)
-    {
-        $get = $this->oAccessTokenMocked->get($option);
-        $this->assertNull($get->delete());
-    }
+        // Test getting a new token
+        $result = $this->accessToken->get(['email' => 'user@example.com', 'password' => 'secret']);
+        $tokenDTO = $result->getTokenDTO();
 
-    public function getDataProvider(): array
-    {
-        return [
-            [['email' => 'test@gmail.com', 'password' => 'TopSecret!']],
-            [[]],
-        ];
+        $this->assertInstanceOf(AccessTokenDTO::class, $tokenDTO);
+        $this->assertEquals('abc123', $tokenDTO->accessToken);
+        $this->assertEquals('Bearer', $tokenDTO->tokenType);
+        $this->assertEquals('test_scope', $tokenDTO->scope);
     }
 }

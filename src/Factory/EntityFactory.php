@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Camoo\Hosting\Factory;
 
 use Camoo\Hosting\Entity\Configuration;
@@ -17,7 +19,7 @@ use Camoo\Hosting\Entity\Result;
 use Camoo\Hosting\Entity\SubDomain;
 use Camoo\Hosting\Entity\Tariff;
 
-class EntityFactory
+class EntityFactory implements EntityFactoryInterface
 {
     private static ?self $instance = null;
 
@@ -30,9 +32,9 @@ class EntityFactory
         return self::$instance;
     }
 
-    public function getEntityClass(string $name): EntityInterface
+    public function getEntityClass(string $entity): EntityInterface
     {
-        return match ($name) {
+        return match ($entity) {
             'Contact' => new Contact(),
             'Configuration' => new Configuration(),
             'Customer' => new Customer(),

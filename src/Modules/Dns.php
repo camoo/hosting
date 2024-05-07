@@ -11,17 +11,19 @@ use Camoo\Hosting\Lib\Response;
  */
 class Dns extends AppModules
 {
-    public function activate($id): Response
+    public function activate(int $id): Response
     {
         return $this->client->post('dns/activate', ['id' => $id]);
     }
 
-    public function add($data): Response
+    /** @param array<string,string|int> $data */
+    public function add(array $data): Response
     {
         return $this->client->post('dns/add-record', $data);
     }
 
-    public function delete($data): Response
+    /** @param array<string,string|int> $data */
+    public function delete(array $data): Response
     {
         return $this->client->post('dns/delete-record', $data);
     }

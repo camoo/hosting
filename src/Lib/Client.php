@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Camoo\Hosting\Lib;
 
 use Camoo\Hosting\Dto\AccessTokenDTO;
+use Camoo\Http\Curl\Domain\Client\ClientInterface;
 use Camoo\Http\Curl\Domain\Entity\Configuration;
 use Camoo\Http\Curl\Domain\Response\ResponseInterface;
+use Camoo\Http\Curl\Infrastructure\Client as HttpClient;
 use Camoo\Http\Curl\Infrastructure\Request;
 
 /**
@@ -18,8 +20,12 @@ class Client
 {
     private const API_ENDPOINT = 'https://api.camoo.hosting/v1/';
 
-    public function __construct(private ?AccessToken $accessToken = null, private ?string $entity = null)
-    {
+    public function __construct(
+        private ?AccessToken $accessToken = null,
+        private ?string $entity = null,
+        private ?ClientInterface $httpClient = null
+    ) {
+        $this->httpClient ??= new HttpClient();
     }
     // @codeCoverageIgnoreEnd
 
@@ -57,7 +63,8 @@ class Client
             $header['Authorization'] = 'Bearer ' . $this->getToken();
         }
 
-        $client = new \Camoo\Http\Curl\Infrastructure\Client();
+        /** @var ClientInterface $client */
+        $client = $this->httpClient;
         $request = new Request(Configuration::create(), $url, $header, $data, $type);
 
         return $client->sendRequest($request);

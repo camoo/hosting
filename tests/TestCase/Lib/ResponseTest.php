@@ -61,6 +61,18 @@ class ResponseTest extends TestCase
         $this->assertEquals(['status' => 'OK', 'result' => ['some_key' => 'value']], $response->getJson());
     }
 
+    public function testGetJsonReturnsFailureForMalformedBody(): void
+    {
+        $this->httpResponseMock->method('getStatusCode')->willReturn(200);
+        $this->streamMock->method('getContents')->willReturn('{invalid');
+        $response = new Response($this->httpResponseMock);
+
+        $this->assertSame(
+            ['status' => Response::BAD_STATUS, 'message' => 'Invalid JSON response'],
+            $response->getJson(),
+        );
+    }
+
     public function testGetEntity()
     {
         $this->httpResponseMock->method('getStatusCode')->willReturn(200);

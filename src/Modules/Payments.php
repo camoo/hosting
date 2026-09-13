@@ -16,6 +16,6 @@ final class Payments extends AppModules
 
     public function check(string $paymentId): \Camoo\Hosting\Lib\Response
     {
-        return $this->client->get('payment/check?payment_id=' . $paymentId);
+        return $this->client->get('payment/check?payment_id=' . rawurlencode($paymentId));
     }
 }

@@ -59,8 +59,9 @@ class Client
         $url = $this->buildUri($url);
         $header = ['Content-type' => 'multipart/form-data'];
 
-        if (null !== $this->getToken()) {
-            $header['Authorization'] = 'Bearer ' . $this->getToken();
+        $token = $this->getToken();
+        if (null !== $token) {
+            $header['Authorization'] = 'Bearer ' . $token;
         }
 
         /** @var ClientInterface $client */
@@ -78,6 +79,9 @@ class Client
         }
         /** @var AccessTokenDTO $dto */
         $dto = $this->accessToken->getTokenDTO();
+        if (null === $dto) {
+            return null;
+        }
         if ($dto->expiresIn > 0) {
             return $dto->accessToken;
         }
@@ -88,7 +92,7 @@ class Client
         /** @var AccessTokenDTO $dto */
         $dto = $this->accessToken->getTokenDTO();
 
-        return $dto->accessToken;
+        return $dto?->accessToken;
     }
 
     private function buildUri(string $path): string

@@ -215,7 +215,7 @@ class AccessToken implements Stringable
         }
         $key = hash('sha256', ACCESS_TOKEN_SALT);
         $iv_length = openssl_cipher_iv_length(self::ENCRYPT_KEY);
-        if ($iv_length === false) {
+        if (empty($iv_length)) {
             throw new AccessTokenException('Encryption IV length not supported');
         }
         $iv = openssl_random_pseudo_bytes($iv_length);
@@ -239,7 +239,7 @@ class AccessToken implements Stringable
         $enc = base64_decode($string);
         $key = hash('sha256', ACCESS_TOKEN_SALT);
         $iv_length = openssl_cipher_iv_length(self::ENCRYPT_KEY);
-        if (false === $iv_length) {
+        if (empty($iv_length)) {
             throw new AccessTokenException('Decryption IV length not supported');
         }
         $iv = substr($enc, 0, $iv_length);

@@ -8,6 +8,7 @@ use Camoo\Hosting\Lib\Client;
 use Camoo\Hosting\Lib\Response;
 use Camoo\Http\Curl\Domain\Client\ClientInterface as HttpClient;
 use Camoo\Http\Curl\Domain\Response\ResponseInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
@@ -16,14 +17,15 @@ use Psr\Http\Message\StreamInterface;
  * Class ClientTest
  *
  * @author CamooSarl
- *
- * @covers \Camoo\Hosting\Lib\Client
  */
+#[CoversClass(Client::class)]
 class ClientTest extends TestCase
 {
     private Client $client;
 
     private MockObject $httpMock;
+
+    private AccessTokenDTO $accessTokenDTO;
 
     protected function setUp(): void
     {

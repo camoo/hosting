@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Camoo\Hosting\Entity;
 
+use AllowDynamicProperties;
 use Camoo\Hosting\Factory\EntityFactory;
 use ReflectionObject;
 use stdClass;
@@ -13,6 +14,7 @@ use stdClass;
  *
  * @author CamooSarl
  */
+#[AllowDynamicProperties]
 class AppEntity implements EntityInterface
 {
     /** @var array|string[] */

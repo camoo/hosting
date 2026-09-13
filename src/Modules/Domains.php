@@ -73,4 +73,24 @@ class Domains extends AppModules
     {
         return $this->client->post('domains/modify-nameservers', ['id' => $id, 'ns' => implode(',', $nameservers)]);
     }
+
+    public function enableTheftProtection(int $id): Response
+    {
+        return $this->client->post('domains/theft-protection/enable', ['id' => $id]);
+    }
+
+    public function disableTheftProtection(int $id): Response
+    {
+        return $this->client->post('domains/theft-protection/disable', ['id' => $id]);
+    }
+
+    public function enableWhoisPrivacy(int $id): Response
+    {
+        return $this->client->post('domains/whois-privacy/enable', ['id' => $id]);
+    }
+
+    public function disableWhoisPrivacy(int $id): Response
+    {
+        return $this->client->post('domains/whois-privacy/disable', ['id' => $id]);
+    }
 }

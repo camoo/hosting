@@ -18,6 +18,8 @@ class ResponseTest extends TestCase
 
     private MockObject $streamMock;
 
+    private MockObject $factoryMock;
+
     private Response $response;
 
     protected function setUp(): void

@@ -97,9 +97,13 @@ class Client
 
     private function buildUri(string $path): string
     {
+        $endpoint = getenv('CAMOO_HOSTING_ENDPOINT')
+            ?: (defined('CAMOO_HOSTING_ENDPOINT') ? (string)CAMOO_HOSTING_ENDPOINT : null)
+            ?: self::API_ENDPOINT;
+
         return sprintf(
             '%s/%s',
-            rtrim(self::API_ENDPOINT, '/'),
+            rtrim($endpoint, '/'),
             ltrim($path, '/')
         );
     }

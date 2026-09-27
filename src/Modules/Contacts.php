@@ -18,4 +18,10 @@ class Contacts extends AppModules
     {
         return $this->client->post('contacts/add', $data);
     }
+
+    /** @param array<string,string|int> $data */
+    public function edit(array $data): Response
+    {
+        return $this->client->post('contacts/edit', $data);
+    }
 }

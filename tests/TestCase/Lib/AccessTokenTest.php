@@ -3,6 +3,7 @@
 namespace CamooHosting\Test\TestCase\Lib;
 
 use Camoo\Hosting\Dto\AccessTokenDTO;
+use Camoo\Hosting\Exception\AccessTokenException;
 use Camoo\Hosting\Lib\AccessToken;
 use Camoo\Hosting\Lib\Client;
 use Camoo\Hosting\Lib\Response;
@@ -63,5 +64,19 @@ class AccessTokenTest extends TestCase
         $this->assertEquals('abc123', $tokenDTO->accessToken);
         $this->assertEquals('Bearer', $tokenDTO->tokenType);
         $this->assertEquals('test_scope', $tokenDTO->scope);
+    }
+
+    public function testGetThrowsWhenAuthenticationFails(): void
+    {
+        $response = $this->createMock(ResponseInterface::class);
+        $body = $this->createMock(StreamInterface::class);
+        $body->method('getContents')->willReturn('{"status":"KO"}');
+
+        $response->method('getStatusCode')->willReturn(401);
+        $response->method('getBody')->willReturn($body);
+        $this->client->method('post')->willReturn(new Response($response));
+
+        $this->expectException(AccessTokenException::class);
+        $this->accessToken->get(['email' => 'user@example.com', 'password' => 'secret']);
     }
 }

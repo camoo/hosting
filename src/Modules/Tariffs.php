@@ -13,8 +13,16 @@ use Camoo\Hosting\Lib\Response;
  */
 class Tariffs extends AppModules
 {
-    public function get(): Response
+    public function get(?int $count = null, ?int $page = null): Response
     {
-        return $this->client->get('tariffs/get');
+        $params = [];
+        if (null !== $count) {
+            $params['count'] = $count;
+        }
+        if (null !== $page) {
+            $params['page'] = $page;
+        }
+
+        return $this->client->get('tariffs/get', $params);
     }
 }

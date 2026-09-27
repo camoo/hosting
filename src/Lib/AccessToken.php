@@ -54,8 +54,8 @@ class AccessToken implements Stringable
     /** @param array<string,string> $loginData */
     public function get(array $loginData = []): self
     {
-        if (empty($loginData) && defined('cm_email') && defined('cm_passwd')) {
-            $loginData = ['email' => cm_email, 'password' => cm_passwd];
+        if (empty($loginData)) {
+            $loginData = $this->credentialsFromEnvironment();
         }
         static::$loginData = $loginData;
 
@@ -66,19 +66,53 @@ class AccessToken implements Stringable
         }
 
         if ($response = $this->apiCall()) {
+            $result = $response['result'] ?? null;
+            if (!is_array($result)
+                || !isset($result['access_token'], $result['token_type'], $result['expires_in'], $result['scope'])
+                || !is_string($result['access_token'])
+                || !is_string($result['token_type'])
+                || !is_numeric($result['expires_in'])
+                || !is_string($result['scope'])
+            ) {
+                throw new AccessTokenException('Authentication response is invalid.');
+            }
+
             $issuedAt = time();
-            $expiresIn = max((int)$response['result']['expires_in'] - 60, 10);
+            $expiresIn = max((int)$result['expires_in'] - 60, 10);
             self::$tokenDTO = new AccessTokenDTO(
-                $response['result']['access_token'],
-                $response['result']['token_type'],
+                $result['access_token'],
+                $result['token_type'],
                 $this->getExpiresIn($issuedAt, $expiresIn),
                 $issuedAt,
-                $response['result']['scope']
+                $result['scope']
             );
             $this->saveTokenToLocalCache($issuedAt);
+        } else {
+            throw new AccessTokenException('Authentication request failed.');
         }
 
         return $this;
+    }
+
+    /**
+     * Resolve credentials from standard environment variables while keeping
+     * the original constants backwards compatible.
+     *
+     * @return array{email:string,password:string}
+     */
+    private function credentialsFromEnvironment(): array
+    {
+        $email = getenv('CAMOO_HOSTING_EMAIL') ?: (defined('cm_email') ? (string)cm_email : '');
+        $password = getenv('CAMOO_HOSTING_PASSWORD') ?: (defined('cm_passwd') ? (string)cm_passwd : '');
+
+        if ($email === '' || $password === '') {
+            throw new AccessTokenException(
+                'Camoo.Hosting credentials are missing. Set CAMOO_HOSTING_EMAIL and CAMOO_HOSTING_PASSWORD, '
+                . 'or pass email and password explicitly to AccessToken::get().'
+            );
+        }
+
+        return ['email' => $email, 'password' => $password];
     }
 
     public function getTokenDTO(): ?AccessTokenDTO
@@ -90,6 +124,7 @@ class AccessToken implements Stringable
 
     public function delete(): void
     {
+        self::$tokenDTO = null;
         if (null === self::$tmpPath) {
             return;
         }
@@ -139,13 +174,6 @@ class AccessToken implements Stringable
     /** Reads the cached token, checks its validity, and deletes if expired. */
     private function getCachedToken(): ?string
     {
-        $lastChangedTime = filemtime(self::$tmpPath ?? '');
-        if ($lastChangedTime && ($lastChangedTime + 1740) < time()) {
-            unlink(self::$tmpPath ?? '');
-
-            return null;
-        }
-
         $encryptedData = file_get_contents(self::$tmpPath ?? '');
         if (false === $encryptedData || !($decryptedData = self::decrypt($encryptedData))) {
             unlink(self::$tmpPath ?? '');
@@ -154,6 +182,20 @@ class AccessToken implements Stringable
         }
 
         $data = json_decode($decryptedData, true);
+
+        if (!is_array($data)
+            || !isset($data['access_token'], $data['token_type'], $data['expires_in'], $data['issued_at'], $data['scope'])
+            || !is_string($data['access_token'])
+            || !is_string($data['token_type'])
+            || !is_numeric($data['expires_in'])
+            || !is_numeric($data['issued_at'])
+            || !is_string($data['scope'])
+            || (int)$data['issued_at'] + (int)$data['expires_in'] <= time()
+        ) {
+            unlink(self::$tmpPath ?? '');
+
+            return null;
+        }
 
         self::$tokenDTO = new AccessTokenDTO(
             $data['access_token'],

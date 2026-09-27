@@ -9,18 +9,22 @@ use Camoo\Hosting\Lib\Response;
 final class Orders extends AppModules
 {
     /**
-     * @param array<string,string|int|float> $body
+     * @param array<string, mixed> $body
      */
     public function offline(array $body): Response
     {
-        return $this->client->post('order/offline', $body);
+        $payload = array_key_exists('body', $body) ? $body : ['body' => json_encode($body)];
+
+        return $this->client->post('order/offline', $payload);
     }
 
     /**
-     * @param array<string, string|int|float> $body
+     * @param array<string, mixed> $body
      */
     public function online(array $body): Response
     {
-        return $this->client->post('order/online', $body);
+        $payload = array_key_exists('body', $body) ? $body : ['body' => json_encode($body)];
+
+        return $this->client->post('order/online', $payload);
     }
 }

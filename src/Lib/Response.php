@@ -19,6 +19,8 @@ class Response
 
     public const GOOD_STATUS = 'OK';
 
+    private ?string $body = null;
+
     public function __construct(private ResponseInterface $response, private ?string $entity = null)
     {
     }
@@ -31,7 +33,7 @@ class Response
 
     public function getBody(): string
     {
-        return $this->response->getBody()->getContents();
+        return $this->body ??= $this->response->getBody()->getContents();
     }
 
     public function getStatusCode(): int
@@ -82,12 +84,9 @@ class Response
 
     protected function decodeJson(string $sJSON, bool $bAsHash = false): mixed
     {
-        if (($xData = json_decode($sJSON, $bAsHash)) === null
-                && (json_last_error() !== JSON_ERROR_NONE)) {
-            trigger_error(json_last_error_msg(), E_USER_ERROR);
-        }
+        $xData = json_decode($sJSON, $bAsHash);
 
-        return $xData;
+        return json_last_error() === JSON_ERROR_NONE ? $xData : null;
     }
 
     /**

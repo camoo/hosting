@@ -46,6 +46,22 @@ class ResponseTest extends TestCase
         $this->assertEquals('{"status":"OK","data":"some data"}', $response->getError());
     }
 
+    public function testBodyCanBeReadMoreThanOnce(): void
+    {
+        $this->httpResponseMock->method('getStatusCode')->willReturn(200);
+        $this->streamMock->expects($this->once())
+            ->method('getContents')
+            ->willReturn('{"status":"OK","result":{"id":1}}');
+
+        $response = new Response($this->httpResponseMock);
+
+        self::assertSame('{"status":"OK","result":{"id":1}}', $response->getBody());
+        self::assertSame(
+            ['status' => 'OK', 'result' => ['id' => 1]],
+            $response->getJson(),
+        );
+    }
+
     public function testGetJsonWithBadStatus()
     {
         $this->httpResponseMock->method('getStatusCode')->willReturn(404);

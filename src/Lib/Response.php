@@ -19,6 +19,8 @@ class Response
 
     public const GOOD_STATUS = 'OK';
 
+    private ?string $body = null;
+
     public function __construct(private ResponseInterface $response, private ?string $entity = null)
     {
     }
@@ -31,7 +33,7 @@ class Response
 
     public function getBody(): string
     {
-        return $this->response->getBody()->getContents();
+        return $this->body ??= $this->response->getBody()->getContents();
     }
 
     public function getStatusCode(): int

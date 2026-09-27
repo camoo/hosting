@@ -20,6 +20,10 @@ class AppModules
 {
     protected ?string $entityName = null;
 
+    public function __construct(protected ?Client $injectedClient = null)
+    {
+    }
+
     /**
      * Magic method for property access. Supports 'client' and 'accessToken' properties for lazy loading.
      *
@@ -38,6 +42,10 @@ class AppModules
 
     protected function getClient(): Client
     {
+        if ($this->injectedClient !== null) {
+            return $this->injectedClient;
+        }
+
         $fullName = get_called_class();
         if (empty($fullName)) {
             throw new ModuleException('Called class not found !');
@@ -46,7 +54,7 @@ class AppModules
         $asFullName = explode('\\', $fullName);
         $this->entityName = array_pop($asFullName);
 
-        return new Client(AccessToken::getInstance()->get(), $this->getEntityName());
+        return $this->injectedClient = new Client(AccessToken::getInstance()->get(), $this->getEntityName());
     }
 
     protected function getEntityName(): ?string

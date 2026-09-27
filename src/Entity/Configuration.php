@@ -11,4 +11,6 @@ namespace Camoo\Hosting\Entity;
  */
 final class Configuration extends AppEntity
 {
+    /** ISO-style application locale selected by the reseller. */
+    public ?string $locale = null;
 }

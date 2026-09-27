@@ -23,12 +23,12 @@ class Customers extends AppModules
 
     public function getByEmail(string $email): Response
     {
-        return $this->client->get('customers/get-by-email/?email=' . $email);
+        return $this->client->get('customers/get-by-email', ['email' => $email]);
     }
 
     public function getById(int $id): Response
     {
-        return $this->client->get('customers/get-by-id/?id=' . $id);
+        return $this->client->get('customers/get-by-id', ['id' => $id]);
     }
 
     /** @param array<string,string|int> $data */
@@ -39,6 +39,6 @@ class Customers extends AppModules
 
     public function getSsoToken(int $id): Response
     {
-        return $this->client->get('customers/sso/?id=' . $id);
+        return $this->client->get('customers/sso', ['id' => $id]);
     }
 }

@@ -102,8 +102,12 @@ class AccessToken implements Stringable
      */
     private function credentialsFromEnvironment(): array
     {
-        $email = getenv('CAMOO_HOSTING_EMAIL') ?: (defined('cm_email') ? (string)cm_email : '');
-        $password = getenv('CAMOO_HOSTING_PASSWORD') ?: (defined('cm_passwd') ? (string)cm_passwd : '');
+        $email = getenv('CAMOO_HOSTING_EMAIL')
+            ?: (defined('CAMOO_HOSTING_EMAIL') ? (string)CAMOO_HOSTING_EMAIL : null)
+            ?: (defined('cm_email') ? (string)cm_email : '');
+        $password = getenv('CAMOO_HOSTING_PASSWORD')
+            ?: (defined('CAMOO_HOSTING_PASSWORD') ? (string)CAMOO_HOSTING_PASSWORD : null)
+            ?: (defined('cm_passwd') ? (string)cm_passwd : '');
 
         if ($email === '' || $password === '') {
             throw new AccessTokenException(

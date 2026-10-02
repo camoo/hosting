@@ -24,6 +24,11 @@ class DomainsTest extends TestCase
         $this->assertInstanceOf(Response::class, $result);
     }
 
+    public function testGetPrices(): void
+    {
+        $this->assertInstanceOf(Response::class, $this->oClientMocked->getPrices());
+    }
+
     public function testRegister(): void
     {
         $this->assertInstanceOf(Response::class, $this->oClientMocked->register([]));

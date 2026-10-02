@@ -19,6 +19,8 @@ class AccessToken implements Stringable
 
     private const ENCRYPT_KEY = 'AES-256-CBC';
 
+    private const ENCRYPTED_ENV_PASSWORD_PREFIX = 'enc:v1:';
+
     protected static ?string $tmpPath = null;
 
     /** @var array<string,string> */
@@ -109,6 +111,8 @@ class AccessToken implements Stringable
             ?: (defined('CAMOO_HOSTING_PASSWORD') ? (string)CAMOO_HOSTING_PASSWORD : null)
             ?: (defined('cm_passwd') ? (string)cm_passwd : '');
 
+        $password = $this->decryptEnvironmentPassword($password);
+
         if ($email === '' || $password === '') {
             throw new AccessTokenException(
                 'Camoo.Hosting credentials are missing. Set CAMOO_HOSTING_EMAIL and CAMOO_HOSTING_PASSWORD, '
@@ -117,6 +121,29 @@ class AccessToken implements Stringable
         }
 
         return ['email' => $email, 'password' => $password];
+    }
+
+    private function decryptEnvironmentPassword(string $password): string
+    {
+        if (!str_starts_with($password, self::ENCRYPTED_ENV_PASSWORD_PREFIX)) {
+            return $password;
+        }
+
+        if (!defined('ACCESS_TOKEN_SALT') || ACCESS_TOKEN_SALT === '') {
+            throw new AccessTokenException('ACCESS_TOKEN_SALT is required for an encrypted password.');
+        }
+
+        try {
+            $decrypted = self::decrypt(substr($password, strlen(self::ENCRYPTED_ENV_PASSWORD_PREFIX)));
+        } catch (\Throwable $exception) {
+            throw new AccessTokenException('The encrypted Camoo.Hosting password could not be decrypted.', 0, $exception);
+        }
+
+        if ($decrypted === '') {
+            throw new AccessTokenException('The encrypted Camoo.Hosting password is empty.');
+        }
+
+        return $decrypted;
     }
 
     public function getTokenDTO(): ?AccessTokenDTO

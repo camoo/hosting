@@ -20,6 +20,11 @@ class Domains extends AppModules
         return $this->client->post('domains/availability', $data);
     }
 
+    public function getPrices(): Response
+    {
+        return $this->client->get('domains/prices');
+    }
+
     /** @param array<string,string|int> $data */
     public function register(array $data): Response
     {
